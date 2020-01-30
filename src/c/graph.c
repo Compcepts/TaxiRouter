@@ -12,6 +12,8 @@ METHODS:
 #include "../defs/const.h"
 #include "../utils/math.h"
 
+#include "../h/graph.h"
+
 static graph gr;
 
 void init_graph() {

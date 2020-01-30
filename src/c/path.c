@@ -6,13 +6,15 @@ Implementation of paths
 #include "../defs/types.h"
 #include "../defs/const.h"
 
+#include "../h/path.h"
 
-path* new_path(edge *road) {
+
+path* new_path(edge *e) {
     path* pth;
 
     pth = (path*) malloc(sizeof(path));
 
-    pth->curr_road = road;
+    pth->curr_road = e;
     pth->next_path = NULL;
 
     return pth;
