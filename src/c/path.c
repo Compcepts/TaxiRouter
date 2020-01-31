@@ -1,5 +1,10 @@
 /*
 Implementation of paths
+
+
+METHODS:
+
+
 */
 
 

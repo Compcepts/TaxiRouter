@@ -5,8 +5,11 @@
 #include "./const.h"
 
 
+typedef int bool;
+
 typedef struct vertex {
     int coordx, coordy;
+    bool occupied;
 } vertex;
 
 typedef struct edge {

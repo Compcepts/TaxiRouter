@@ -1,5 +1,11 @@
 /*
 Implements cart path finding
+
+
+METHODS:
+
+
+
 */
 
 #include "../defs/const.h"

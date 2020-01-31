@@ -23,6 +23,7 @@ void init_graph() {
         for (j = 0; j < HORIZ_ROADS; i++) {
             gr.vertices[i][j].coordx = i;
             gr.vertices[i][j].coordy = j;
+            gr.vertices[i][j].occupied = FALSE;
         }
     }
 
