@@ -39,6 +39,12 @@ int path_weight(path *start) {
     return sum;
 }
 
+path* pop_head(path **head){
+    path *next = (*head)->next_path;
+    delete_path(head);
+    return next;
+}
+
 void delete_path(path **old) {
     (*old)->curr_road = NULL;
     (*old)->next_path = NULL;

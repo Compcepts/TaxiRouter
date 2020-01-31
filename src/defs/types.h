@@ -27,6 +27,11 @@ typedef struct path {
     path *next_path;
 } path;
 
+typedef struct cart {
+    int x, y;
+    path *curr_path;
+} cart;
+
 enum activity_level {
     Open = 0,
     SevenTurns = 1,
