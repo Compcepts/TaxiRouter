@@ -10,9 +10,13 @@ Implements cart path finding
 
 
 init_graph();
-edge* find_lightest_edge(int x, int y) {
-    edge *e;
-    int lowest_weight = 0;
 
-    
+
+
+
+
+path* construct_path(vertex *s, vertex *d) {
+    edge *e = find_edge(s, d);
+    path *p = new_path(e);
+    return p;
 }
