@@ -28,7 +28,7 @@ typedef struct path {
 } path;
 
 typedef struct cart {
-    int x, y;
+    vertex *curr_loc;
     path *curr_path;
 } cart;
 

@@ -120,6 +120,17 @@ int weight(edge *e) {
     return (*e).weight;
 }
 
+void set_vertex_occupied(vertex *v) {
+    v->occupied = TRUE;
+}
+
+void set_vertex_unoccupied(vertex *v) {
+    v->occupied = FALSE;
+}
+
+bool vertex_occupied(vertex *v) {
+    return v->occupied;
+}
 
 int distance(vertex *src, vertex *dest) {
     return euclidean_distance((*src).coordx, (*src).coordy, (*dest).coordx, (*dest).coordy);

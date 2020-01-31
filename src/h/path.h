@@ -11,6 +11,8 @@ void append_path(path *begin, path *end);
 
 int path_weight(path *start);
 
+path* pop_head(path **head);
+
 void delete_path(path **old);
 
 void delete_full_path(path **head);

@@ -16,6 +16,12 @@ vertex* find_vertex(int x, int y);
 
 int weight(edge *e);
 
+void set_vertex_occupied(vertex *v);
+
+void set_vertex_unoccupied(vertex *v);
+
+bool vertex_occupied(vertex *v);
+
 int distance(vertex *src, vertex *dest);
 
 #endif
