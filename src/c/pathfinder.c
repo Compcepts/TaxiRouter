@@ -32,6 +32,11 @@ int main() {
     return 0;
 }
 
+void init_pathfinder() {
+    init_graph();
+
+
+}
 
 /* Probably unnecessary */
 path* construct_path(vertex *s, vertex *d) {
@@ -99,8 +104,30 @@ path_container* build_path_container(vertex *s, vertex *d) {
 }
 
 
-void build_paths(path_container *ptc, path *p_head, vertex *current_v, vertex *d) {
+/* NOT FUNCTIONAL --- THIS NEEDS MAJOR WORK */
+void build_paths(path_container *ptc, path *p_head, vertex *s, vertex *d) {
+    edge *e = NULL;
+    vertex *up, *right, *down, *left;
+    path *curr_p = p_head, *p;
 
+    int up_dist, right_dist, down_dist, left_dist;
+
+    while (curr_p->next_path != NULL) {
+        curr_p = curr_p->next_path;
+    }
+
+    e = find_edge(s, d);
+
+    if (e == NULL) {
+        up = find_vertex(s->coordx, s->coordy+1);
+        right = find_vertex(s->coordx+1, s->coordy);
+        down = find_vertex(s->coordx, s->coordy-1);
+        left = find_vertex(s->coordx-1, s->coordy);
+    }
+    
+    p = new_path(e);
+    append_path(curr_p, p);
+    add_path(ptc, p_head);
 }
 
 
@@ -193,30 +220,31 @@ path* lowest_cost_path(path_container *ptc) {
         curr_ptc = curr_ptc->next_container;
     }
 
-    delete_full_ptc(&(ptc));
-
-    return lowest_cost;
+    return extract_path(&ptc, lowest_cost);
 }
 
 
-/* Probably unnecessary */
-path* remove_path(path_container *ptc, path *p) {
-    path_container *prev = ptc, *current_ptc = ptc;
+path* extract_path(path_container *ptc, path *p) {
+    path_container *current_ptc = ptc;
     while(current_ptc->path_head != p) {
         if (current_ptc->next_container != NULL) {
-            prev = current_ptc;
             current_ptc = current_ptc->next_container;
         } else {
             return NULL;
         }
     }
-    prev->next_container = current_ptc->next_container;
-    delete_ptc(&current_ptc);
+    current_ptc->path_head = NULL;
+    delete_full_ptc(&ptc);
 
     return p;
 }
 
+
 void delete_ptc(path_container **old) {
+    if ((*old)->path_head != NULL) {
+        delete_full_path(&((*old)->path_head));
+    }
+
     (*old)->path_head = NULL;
     (*old)->next_container = NULL;
 
