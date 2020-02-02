@@ -10,11 +10,11 @@ edge* find_edge(vertex *s, vertex *d);
 
 edge* opposite_edge(edge *e);
 
-void set_weight(edge *e, int w);
+void set_weight(edge *e, int w, int i);
 
 vertex* find_vertex(int x, int y);
 
-int weight(edge *e);
+int weight(edge *e,int i);
 
 void set_vertex_occupied(vertex *v);
 
@@ -22,6 +22,6 @@ void set_vertex_unoccupied(vertex *v);
 
 bool vertex_occupied(vertex *v);
 
-int distance(vertex *src, vertex *dest);
+double distance(vertex *src, vertex *dest);
 
 #endif

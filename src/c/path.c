@@ -29,17 +29,17 @@ void append_path(path *begin, path *end) {
     begin->next_path = end;
 }
 
-int path_weight(path *start) {
+int path_weight(path *start, int i) {
     int sum = 0;
     while(start->next_path != NULL) {
-        sum += start->curr_road->weight;
+        sum += weight(start->curr_road, i);
         start = start->next_path;
     }
-    sum += start->curr_road->weight;
+    sum += weight(start->curr_road, i);
     return sum;
 }
 
-path* pop_head(path **head){
+path* pop_path_head(path **head){
     path *next = (*head)->next_path;
     delete_path(head);
     return next;

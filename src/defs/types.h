@@ -14,7 +14,7 @@ typedef struct vertex {
 
 typedef struct edge {
     vertex *src, *dest;
-    int weight;
+    int weight[CARTS];
 } edge;
 
 typedef struct graph {
@@ -30,17 +30,7 @@ typedef struct path {
 typedef struct cart {
     vertex *curr_loc;
     path *curr_path;
+    int index;
 } cart;
-
-enum activity_level {
-    Open = 0,
-    SevenTurns = 1,
-    SixTurns = 2,
-    FiveTurns = 3,
-    FourTurns = 4,
-    ThreeTurns = 5,
-    TwoTurns = 6,
-    OneTurn = 7,
-};
 
 #endif
