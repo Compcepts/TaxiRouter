@@ -7,9 +7,11 @@
 
 path* new_path(edge *e);
 
+path* empty_path();
+
 void append_path(path *begin, path *end);
 
-int path_weight(path *start);
+path* copy_path(path *p);
 
 path* pop_path_head(path **head);
 

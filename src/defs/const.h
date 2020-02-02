@@ -18,5 +18,12 @@
 
 #define NULL ((void*)0)
 
+enum direction {
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+    NONE
+};
 
 #endif

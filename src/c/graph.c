@@ -7,10 +7,10 @@ METHODS:
 
 
 */
+#include <stdlib.h>
 
 #include "../defs/types.h"
 #include "../defs/const.h"
-#include "../utils/math.h"
 
 #include "../h/graph.h"
 
@@ -148,6 +148,6 @@ bool vertex_occupied(vertex *v) {
     return v->occupied;
 }
 
-double distance(vertex *src, vertex *dest) {
-    return euclidean_distance(src->coordx, src->coordy, dest->coordx, dest->coordy);
+int distance(vertex *src, vertex *dest) {
+    return abs(src->coordx - dest->coordx) + abs(src->coordy - dest->coordy);
 }

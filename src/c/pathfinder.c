@@ -8,6 +8,8 @@ METHODS:
 
 */
 
+#include <stdlib.h>
+
 #include "../defs/const.h"
 #include "../defs/types.h"
 
@@ -18,6 +20,17 @@ METHODS:
 
 
 static cart carts[CARTS];
+
+
+
+int main() {
+    init_graph();
+
+    carts[0].curr_loc = find_vertex(0,0);
+    find_optimal_path(&(carts[0]), find_vertex(3,3));
+
+    return 0;
+}
 
 
 /* Probably unnecessary */
@@ -31,15 +44,27 @@ path* construct_path(vertex *s, vertex *d) {
 }
 
 
-/* Probably unnecesary */
-bool append_path_vertex(path **p, vertex* v) {
-    edge *e = find_edge((*p)->curr_road->dest, v);
+
+bool append_path_vertex(path *p, vertex* v) {
+    edge *e = find_edge(p->curr_road->dest, v);
     if (e != NULL) {
         path *p_new = new_path(e);
-        append_path((*p), p_new);
+        append_path(p, p_new);
         return TRUE;
     }
     return FALSE;
+}
+
+
+void set_path_weight(path *p, int c_index) {
+    path *curr_p = p;
+    int run = 1;
+    while (curr_p != NULL) {
+        set_weight(p->curr_road, run, c_index);
+        set_weight(opposite_edge(p->curr_road), run, c_index);
+        run++;
+        curr_p = curr_p->next_path;
+    }
 }
 
 
@@ -65,95 +90,150 @@ bool traverse_path(cart *c) {
     return FALSE;
 }
 
-path* build_path(vertex *s, vertex *d, int run, int c_index) {
-    vertex *up, *down, *left, *right;
-    bool col;
-    path *p_final;
-    edge *e = NULL;
+path_container* build_path_container(vertex *s, vertex *d) {
+    path_container *ptc = empty_path_container();
 
-    /* Give distance extreme value to ensure that, if its corresponding vertex is non-existant,
-    that direction is not traveled */
-    double up_dist = 1000, down_dist = 1000, left_dist = 1000, right_dist = 1000;
+    build_paths(ptc, ptc->path_head, s, d);
 
-    up = find_vertex(s->coordx, s->coordy + 1);
-    down = find_vertex(s->coordx, s->coordy - 1);
-    right = find_vertex(s->coordx + 1, s->coordy);
-    left = find_vertex(s->coordx - 1, s->coordy);
-    
-    if (up == d) {
-        e = find_edge(up, d);
-    }
-    else if (right == d) {
-        e = find_edge(right, d);
-    }
-    else if (down == d) {
-        e = find_edge(down, d);
-    }
-    else if (left == d) {
-        e = find_edge(left, d);
-    } 
-
-    else if (e == NULL) {
-        if (up != NULL) {
-            up_dist = distance(up, d);
-        }
-        if (down != NULL) {
-            down_dist = distance(down, d);
-        }
-        if (right != NULL) {
-            right_dist = distance(right, d);
-        }
-        if (left != NULL) {
-            left_dist = distance(left, d);
-        }
-
-        /*
-        RULES OF TRAVEL:
-            1. Never travel highest distance direction
-            2. Check remaining possible paths up to a depth of 3
-            3. Add path distance traveled, distance to target, and collisions, choose lowest value
-        */
-
-       e = predicted_edge();
-    }
-
-
-
-    p_final = new_path(e);
-
-    set_weight(e, run, c_index);
-    set_weight(opposite_edge(e), run, c_index);
-
-    return p_final;
+    return ptc;
 }
 
 
-bool check_collision(edge *e, int w) {
-    int c;
-    for (int c = 0; c < CARTS; c++) {
+void build_paths(path_container *ptc, path *p_head, vertex *current_v, vertex *d) {
+
+}
+
+
+int possible_collision(edge *e, int w) {
+    int c, count = 0;
+    for (c = 0; c < CARTS; c++) {
+        /* Both edges will have the same weight, so we do not need to check
+        the opposite edge */
         if (weight(e, c) == w) {
-            return TRUE;
-        }
-        if (weight(opposite_edge(e), c) == w) {
-            return TRUE;
+            count++;
         }
     }
-    return FALSE;
+    return count;
 }
 
 
-path* find_optimal_path(cart *c, vertex *d) {
-    int run = 1;
-    vertex *start = c->curr_loc;
-    path *tail;
+void find_optimal_path(cart *c, vertex *d) {
+    c->curr_path = lowest_cost_path(build_path_container(c->curr_loc, d));
+    set_path_weight(c->curr_path, c->index);
+}
 
-    c->curr_path = build_path(c->curr_loc, d, run, c->index);
 
-    tail = c->curr_path;
 
-    while (c->curr_path->curr_road->dest != d) {
-        tail->next_path = build_path(tail->curr_road->dest, d, run, c->index);
-        tail = tail->next_path;
-        run++;
+
+
+
+
+
+
+
+
+
+
+
+/* Path container methods */
+
+path_container* new_path_container(path *p) {
+    path_container* ptc;
+
+    ptc = (path_container*) malloc(sizeof(path_container));
+
+    ptc->next_container = NULL;
+    ptc->path_head = p;
+
+    return ptc;
+}
+
+
+path_container* empty_path_container() {
+    path_container* ptc;
+
+    ptc = (path_container*) malloc(sizeof(path_container));
+
+    ptc->next_container = NULL;
+    ptc->path_head = NULL;
+
+    return ptc;
+}
+
+
+void add_path(path_container *ptc, path *p) {
+    ptc->path_head = p;
+}
+
+
+void append_ptc(path_container *tail, path_container *next) {
+    tail->next_container = next;
+}
+
+
+path* lowest_cost_path(path_container *ptc) {
+    path *lowest_cost, *curr_p = ptc->path_head, *p_head;
+    path_container *curr_ptc = ptc;
+    int current_low = 100, run = 1, running_sum = 0;
+
+    while (curr_ptc != NULL) {
+        running_sum = 0;
+        run = 1;
+        p_head = curr_ptc->path_head;
+        curr_p = p_head;
+        while (curr_p != NULL) {
+            running_sum += possible_collision(curr_p->curr_road, run);
+            running_sum++;
+            run++;
+            curr_p = curr_p->next_path;
+        }
+        if (running_sum < current_low) {
+            lowest_cost = p_head;
+        }
+        curr_ptc = curr_ptc->next_container;
     }
+
+    delete_full_ptc(&(ptc));
+
+    return lowest_cost;
+}
+
+
+/* Probably unnecessary */
+path* remove_path(path_container *ptc, path *p) {
+    path_container *prev = ptc, *current_ptc = ptc;
+    while(current_ptc->path_head != p) {
+        if (current_ptc->next_container != NULL) {
+            prev = current_ptc;
+            current_ptc = current_ptc->next_container;
+        } else {
+            return NULL;
+        }
+    }
+    prev->next_container = current_ptc->next_container;
+    delete_ptc(&current_ptc);
+
+    return p;
+}
+
+void delete_ptc(path_container **old) {
+    (*old)->path_head = NULL;
+    (*old)->next_container = NULL;
+
+    free(*old);
+}
+
+void delete_full_ptc(path_container **head) {
+    while((*head)->next_container != NULL) {
+        delete_full_path(&(*head)->next_container);
+    }
+    delete_ptc(head);
+}
+
+
+
+/* Cart methods */
+
+cart* find_cart(int index) {
+    return &(carts[index]);
 }

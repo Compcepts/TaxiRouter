@@ -7,6 +7,7 @@ METHODS:
 
 */
 
+#include <stdlib.h>
 
 #include "../defs/types.h"
 #include "../defs/const.h"
@@ -25,18 +26,28 @@ path* new_path(edge *e) {
     return pth;
 }
 
+path* empty_path() {
+    path* pth;
+
+    pth = (path*) malloc(sizeof(path));
+
+    pth->curr_road = NULL;
+    pth->next_path = NULL;
+
+    return pth;
+}
+
 void append_path(path *begin, path *end) {
     begin->next_path = end;
 }
 
-int path_weight(path *start, int i) {
-    int sum = 0;
-    while(start->next_path != NULL) {
-        sum += weight(start->curr_road, i);
-        start = start->next_path;
-    }
-    sum += weight(start->curr_road, i);
-    return sum;
+path* copy_path(path *p) {
+    path *copy = empty_path();
+
+    copy->curr_road = p->curr_road;
+    copy->next_path = p->next_path;
+
+    return copy;
 }
 
 path* pop_path_head(path **head){
@@ -49,8 +60,7 @@ void delete_path(path **old) {
     (*old)->curr_road = NULL;
     (*old)->next_path = NULL;
 
-    free(**old);
-    (*old) = NULL;
+    free(*old);
 }
 
 

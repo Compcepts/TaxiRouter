@@ -27,6 +27,11 @@ typedef struct path {
     path *next_path;
 } path;
 
+typedef struct path_container {
+    path *path_head;
+    path_container *next_container;
+} path_container;
+
 typedef struct cart {
     vertex *curr_loc;
     path *curr_path;
