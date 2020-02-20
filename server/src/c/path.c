@@ -8,6 +8,7 @@ METHODS:
 */
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "../defs/types.h"
 #include "../defs/const.h"
@@ -51,7 +52,7 @@ edge_queue* new_eq(edge *e) {
 
 void enqueue_edge(edge_queue **tail, edge *e) {
     edge_queue *next;
-    if (tail == NULL) {
+    if (*tail == NULL) {
         *tail = new_eq(e);
         (*tail)->next_eq = *tail;
     }
@@ -70,6 +71,7 @@ void enqueue_edge(edge_queue **tail, edge *e) {
 }
 
 edge* dequeue_edge(edge_queue **tail) {
+    printf("how many times fam???\n");
     edge *e;
     edge_queue *remove_eq;
     if (*tail == NULL) {
@@ -193,7 +195,7 @@ void delete_eq(edge_queue *eq) {
 }
 
 void delete_full_eq(edge_queue **tail) {
-    while (empty_eq(*tail) == FALSE) {
+    while (*tail != NULL) {
         dequeue_edge(tail);
     }
 }
@@ -210,6 +212,7 @@ void print_path(path *p) {
     edge_queue *curr = p->edge_queue_tail->next_eq;
     while (curr->next_eq != p->edge_queue_tail) {
         print_edge(curr->curr_edge);
+        curr = curr->next_eq;
     }
     print_edge(curr->next_eq->curr_edge);
 }

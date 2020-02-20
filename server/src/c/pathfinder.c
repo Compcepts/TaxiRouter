@@ -121,7 +121,6 @@ path_container* build_path_container(vertex *s, vertex *d) {
 
 
 bool edge_just_traveled(path *p, edge *e) {
-    printf("made it");
     if (p == NULL) {
         return FALSE;
     }
@@ -179,23 +178,28 @@ void build_paths(path_container *ptc_head, path *p, vertex *s, vertex *d, int ru
 
             if (distances[(i%4)] < distances[(i+2)%4] && distances[(i+1)%4] < distances[(i+3)%4]) {
                 printf("second time here\n");
+
                 if (edge_just_traveled(p, poss_edges[i]) == FALSE) {
-                    printf("we are not making it here?!");
                     poss_paths[0] = p;
                     enqueue_edge(&(poss_paths[0]->edge_queue_tail), poss_edges[i]);
-                    printf("we're fr not making it here");
+                    
                     build_paths(ptc_head, poss_paths[0], poss_edges[i]->dest, d, run+1);
                     path_built = TRUE;
                 }
+
                 if (edge_just_traveled(p, poss_edges[(i+1)%4]) == FALSE) {
                     if (path_built == TRUE) {
                         poss_paths[1] = copy_path(p);
                         enqueue_edge(&(poss_paths[1]->edge_queue_tail), poss_edges[(i+1)%4]);
                         insert_path(ptc_head, poss_paths[1]);
+                        
                         build_paths(ptc_head, poss_paths[1], poss_edges[(i+1)%4]->dest, d, run+1);
-                    } else {
+                    } 
+                    
+                    else {
                         poss_paths[1] = p;
                         enqueue_edge(&(poss_paths[1]->edge_queue_tail), poss_edges[(i+1)%4]);
+                        
                         build_paths(ptc_head, poss_paths[1], poss_edges[(i+1)%4]->dest, d, run+1);
                     }
                 }
@@ -203,24 +207,30 @@ void build_paths(path_container *ptc_head, path *p, vertex *s, vertex *d, int ru
 
             else if (distances[(i%4)] < distances[(i+2)%4] && distances[(i+3)%4] < distances[(i+1)%4]) {
                 printf("third time here\n");
+
                 if (edge_just_traveled(p, poss_edges[i]) == FALSE) {
-                    printf("should make it here\n");
                     poss_paths[0] = p;
-                    print_edge(poss_edges[i]);
                     enqueue_edge(&(poss_paths[0]->edge_queue_tail), poss_edges[i]);
-                    printf("como se dice here\n");
+                    
                     build_paths(ptc_head, poss_paths[0], poss_edges[i]->dest, d, run+1);
                     path_built = TRUE;
                 }
+
                 if (edge_just_traveled(p, poss_edges[(i+3)%4]) == FALSE) {
+                    
                     if (path_built == TRUE) {
                         poss_paths[2] = copy_path(p);
                         enqueue_edge(&(poss_paths[2]->edge_queue_tail), poss_edges[(i+3)%4]);
+
                         insert_path(ptc_head, poss_paths[2]);
+                        
                         build_paths(ptc_head, poss_paths[2], poss_edges[(i+3)%4]->dest, d, run+1);
-                    } else {
+                    } 
+                    
+                    else {
                         poss_paths[2] = p;
                         enqueue_edge(&(poss_paths[2]->edge_queue_tail), poss_edges[(i+3)%4]);
+                        
                         build_paths(ptc_head, poss_paths[2], poss_edges[(i+3)%4]->dest, d, run+1);
                     }
                 }
@@ -228,35 +238,50 @@ void build_paths(path_container *ptc_head, path *p, vertex *s, vertex *d, int ru
 
             else if (distances[(i%4)] < distances[(i+2)%4] && distances[(i+1)%4] == distances[(i+3)%4]) {
                 printf("fourth time here\n");
+                
                 if (distances[(i%4)] < distances[(i+2)%4] && distances[(i+1)%4] < distances[(i+3)%4]) {
+
                     if (edge_just_traveled(p, poss_edges[i]) == FALSE) {
                         poss_paths[0] = p;
                         enqueue_edge(&(poss_paths[0]->edge_queue_tail), poss_edges[i]);
+                        
                         build_paths(ptc_head, poss_paths[0], poss_edges[i]->dest, d, run+1);
                         path_built = TRUE;
                     }
+
                     if (edge_just_traveled(p, poss_edges[(i+1)%4]) == FALSE) {
+                        
                         if (path_built == TRUE) {
                             poss_paths[1] = copy_path(p);
                             enqueue_edge(&(poss_paths[1]->edge_queue_tail), poss_edges[(i+1)%4]);
                             insert_path(ptc_head, poss_paths[1]);
+
                             build_paths(ptc_head, poss_paths[1], poss_edges[(i+1)%4]->dest, d, run+1);
-                        } else {
+                        } 
+                        
+                        else {
                             poss_paths[1] = p;
                             enqueue_edge(&(poss_paths[1]->edge_queue_tail), poss_edges[(i+1)%4]);
+
                             build_paths(ptc_head, poss_paths[1], poss_edges[(i+1)%4]->dest, d, run+1);
                             path_built = TRUE;
                         }
                     }
+
                     if (edge_just_traveled(p, poss_edges[(i+3)%4]) == FALSE) {
+                        
                         if (path_built == TRUE) {
                             poss_paths[2] = copy_path(p);
                             enqueue_edge(&(poss_paths[2]->edge_queue_tail), poss_edges[(i+3)%4]);
                             insert_path(ptc_head, poss_paths[2]);
+                            
                             build_paths(ptc_head, poss_paths[2], poss_edges[(i+3)%4]->dest, d, run+1);
-                        } else {
+                        } 
+                        
+                        else {
                             poss_paths[2] = p;
                             enqueue_edge(&(poss_paths[2]->edge_queue_tail), poss_edges[(i+3)%4]);
+
                             build_paths(ptc_head, poss_paths[2], poss_edges[(i+3)%4]->dest, d, run+1);
                         }
                     }                    
@@ -344,6 +369,7 @@ path* lowest_cost_path(path_container *ptc_head) {
     path *p_ret;
 
     while (ptc != NULL) {
+        printf("that time\n");
         if (path_cost(ptc->curr_path) < lowest_cost) {
             lowest_cost = path_cost(ptc->curr_path);
             p_ret = ptc->curr_path;
@@ -351,6 +377,10 @@ path* lowest_cost_path(path_container *ptc_head) {
         }
         ptc = ptc->next_container;
     }
+
+    print_path(p_ret);
+
+    printf("no worries\n");
     lowest_ptc->curr_path = NULL;
 
     delete_full_ptc(ptc_head);
@@ -361,6 +391,7 @@ path* lowest_cost_path(path_container *ptc_head) {
 
 
 void delete_ptc(path_container *old) {
+    printf("this time\n");
     if (old->curr_path != NULL) {
         delete_path(old->curr_path);
     }
