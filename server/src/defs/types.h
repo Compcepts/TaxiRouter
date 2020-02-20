@@ -22,14 +22,20 @@ typedef struct graph {
     edge edges[POSSIBLE_PATHS];
 } graph;
 
+typedef struct edge_queue {
+    edge *curr_edge;
+    struct edge_queue *next_eq;
+} edge_queue;
+
 typedef struct path {
-    edge *curr_road;
-    path *next_path;
+    int length;
+    int cost;
+    struct edge_queue *edge_queue_tail;
 } path;
 
 typedef struct path_container {
-    path *path_head;
-    path_container *next_container;
+    path *curr_path;
+    struct path_container *next_container;
 } path_container;
 
 typedef struct cart {

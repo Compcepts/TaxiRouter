@@ -8,6 +8,7 @@ METHODS:
 
 */
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "../defs/types.h"
 #include "../defs/const.h"
@@ -20,7 +21,7 @@ void init_graph() {
     int i, j, k, c;
     /* Initialize vertices */
     for (i = 0; i < VERT_ROADS; i++) {
-        for (j = 0; j < HORIZ_ROADS; i++) {
+        for (j = 0; j < HORIZ_ROADS; j++) {
             gr.vertices[i][j].coordx = i;
             gr.vertices[i][j].coordy = j;
             gr.vertices[i][j].occupied = FALSE;
@@ -28,7 +29,6 @@ void init_graph() {
     }
 
     /* Initialize edges */
-
     /* First 20 roads from left to right */
     for (i = 0; i < (POSSIBLE_PATHS/4); i++) {
         j = i % ROADS_HORIZ;
@@ -86,11 +86,12 @@ void init_graph() {
 edge* find_edge(vertex *s, vertex *d) {
     int x1, y1, x2, y2, index;
 
-    x1 = (*s).coordx;
-    y1 = (*s).coordy;
+    x1 = s->coordx;
+    y1 = s->coordy;
 
-    x2 = (*d).coordx;
-    y2 = (*d).coordy;
+    x2 = d->coordx;
+    y2 = d->coordy;
+
 
     /* Dest is to right of src */
     if(x2 == x1 + 1) {
@@ -126,7 +127,7 @@ void set_weight(edge *e, int w, int i) {
 }
 
 vertex* find_vertex(int x, int y) {
-    if (x <= ROADS_HORIZ && y <= ROADS_VERT) {
+    if (x <= ROADS_HORIZ && y <= ROADS_VERT && x >= 0 && y >= 0) {
         return &(gr.vertices[x][y]);
     }
     return NULL;
@@ -136,12 +137,8 @@ int weight(edge *e, int i) {
     return e->weight[i];
 }
 
-void set_vertex_occupied(vertex *v) {
-    v->occupied = TRUE;
-}
-
-void set_vertex_unoccupied(vertex *v) {
-    v->occupied = FALSE;
+void set_vertex_occupation(vertex *v, bool b) {
+    v->occupied = b;
 }
 
 bool vertex_occupied(vertex *v) {
@@ -150,4 +147,12 @@ bool vertex_occupied(vertex *v) {
 
 int distance(vertex *src, vertex *dest) {
     return abs(src->coordx - dest->coordx) + abs(src->coordy - dest->coordy);
+}
+
+void print_edge(edge *e) {
+    if (e != NULL) {
+        printf("Source coordinates: x=%d, y=%d\nDestination coordinates: x=%d, y=%d\n", e->src->coordx, e->src->coordy, e->dest->coordx, e->dest->coordy);
+    } else {
+        printf("NULL edge\n");
+    }
 }

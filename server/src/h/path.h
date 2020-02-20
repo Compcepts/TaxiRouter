@@ -4,19 +4,36 @@
 #include "../defs/const.h"
 #include "../defs/types.h"
 
-
 path* new_path(edge *e);
 
 path* empty_path();
 
-void append_path(path *begin, path *end);
+edge_queue* new_eq(edge *e);
+
+void enqueue_edge(edge_queue **tail, edge *e);
+
+edge* dequeue_edge(edge_queue **tail);
+
+edge* queue_head_edge(path *p);
 
 path* copy_path(path *p);
 
-path* pop_path_head(path **head);
+bool empty_eq(edge_queue *tail);
 
-void delete_path(path **old);
+void decrement_edges(path *p, int c);
 
-void delete_full_path(path **head);
+void increment_edges(path *p, int c);
+
+void add_cost(path *p, int c);
+
+void add_length(path *p, int l);
+
+void delete_eq(edge_queue *eq);
+
+void delete_full_eq(edge_queue **tail);
+
+void delete_path(path *old);
+
+void print_path(path *p);
 
 #endif
