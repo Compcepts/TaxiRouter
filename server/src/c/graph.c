@@ -86,6 +86,10 @@ void init_graph() {
 edge* find_edge(vertex *s, vertex *d) {
     int x1, y1, x2, y2, index;
 
+    if (s == NULL || d == NULL) {
+        return NULL;
+    }
+
     x1 = s->coordx;
     y1 = s->coordy;
 
@@ -94,20 +98,20 @@ edge* find_edge(vertex *s, vertex *d) {
 
 
     /* Dest is to right of src */
-    if(x2 == x1 + 1) {
+    if(x2 == x1 + 1 && y1 == y2) {
         index = (y1*ROADS_HORIZ) + x1;
     }
     /* Dest is above src */
-    else if (y2 == y1 + 1) {
+    else if (y2 == y1 + 1 && x1 == x2) {
         index = EDGE_OFFSET + y1 + (x1*ROADS_VERT);
     }
     /* Dest is to left of src */
-    else if (x1 == x2 +1) {
+    else if (x1 == x2 +1 && y1 == y2) {
         index = (2*EDGE_OFFSET) + (y2*ROADS_HORIZ) + x2;
         
     }
     /* Dest is below src */
-    else if(y1 == y2 + 1) {
+    else if(y1 == y2 + 1 && x1 == x2) {
         index = (3*EDGE_OFFSET) + y2 + (x2*ROADS_VERT);
     } 
     /* Two non-adjacent vertices input */
@@ -150,8 +154,8 @@ int distance(vertex *src, vertex *dest) {
 }
 
 void print_edge(edge *e) {
-    if (e != NULL) {
-        printf("Source coordinates: x=%d, y=%d\nDestination coordinates: x=%d, y=%d\n", e->src->coordx, e->src->coordy, e->dest->coordx, e->dest->coordy);
+    if (e != NULL){
+        printf("src: (%d, %d) -> dest: (%d, %d)\n", e->src->coordx, e->src->coordy, e->dest->coordx, e->dest->coordy);
     } else {
         printf("NULL edge\n");
     }

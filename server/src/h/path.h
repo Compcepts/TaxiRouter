@@ -20,6 +20,8 @@ path* copy_path(path *p);
 
 bool empty_eq(edge_queue *tail);
 
+vertex* next_vertex(path *p);
+
 void decrement_edges(path *p, int c);
 
 void increment_edges(path *p, int c);

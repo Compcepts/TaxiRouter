@@ -30,6 +30,7 @@ typedef struct edge_queue {
 typedef struct path {
     int length;
     int cost;
+    vertex *start;
     struct edge_queue *edge_queue_tail;
 } path;
 

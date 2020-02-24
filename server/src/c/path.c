@@ -25,6 +25,7 @@ path* new_path(edge *e) {
     pth->edge_queue_tail = new_eq(e);
     pth->cost = 0;
     pth->length = 0;
+    pth->start = NULL;
 
     return pth;
 }
@@ -37,6 +38,7 @@ path* empty_path() {
     pth->edge_queue_tail = NULL;
     pth->cost = 0;
     pth->length = 0;
+    pth->start = NULL;
 
     return pth;
 }
@@ -71,9 +73,9 @@ void enqueue_edge(edge_queue **tail, edge *e) {
 }
 
 edge* dequeue_edge(edge_queue **tail) {
-    printf("how many times fam???\n");
     edge *e;
     edge_queue *remove_eq;
+
     if (*tail == NULL) {
         return NULL;
     }
@@ -107,11 +109,11 @@ edge* queue_head_edge(path *p) {
 
 path* copy_path(path *p) {
     path *copy = empty_path();
-    edge_queue *tail = p->edge_queue_tail;
-    edge_queue *next_eq;
+    edge_queue *tail = p->edge_queue_tail, *next_eq;
 
     copy->cost = p->cost;
     copy->length = p->length;
+    copy->start = p->start;
 
     if (tail == NULL) {
         copy->edge_queue_tail = NULL;
@@ -180,6 +182,16 @@ void add_length(path *p, int l) {
     p->length += l;
 }
 
+vertex* next_vertex(path *p) {
+    if (p == NULL) {
+        return NULL;
+    }
+    if (p->edge_queue_tail == NULL) {
+        return p->start;
+    }
+    return p->edge_queue_tail->curr_edge->dest;
+}
+
 bool empty_eq(edge_queue *tail) {
     if (tail == NULL) {
         return TRUE;
@@ -204,15 +216,19 @@ void delete_path(path *old) {
     delete_full_eq(&(old->edge_queue_tail));
     old->cost = 0;
     old->length = 0;
+    old->start = NULL;
 
     free(old);
 }
 
 void print_path(path *p) {
     edge_queue *curr = p->edge_queue_tail->next_eq;
-    while (curr->next_eq != p->edge_queue_tail) {
+
+    printf("path length: %d\npath cost: %d\n\n", p->length, p->cost);
+
+    while (curr != p->edge_queue_tail) {
         print_edge(curr->curr_edge);
         curr = curr->next_eq;
     }
-    print_edge(curr->next_eq->curr_edge);
+    print_edge(curr->curr_edge);
 }
