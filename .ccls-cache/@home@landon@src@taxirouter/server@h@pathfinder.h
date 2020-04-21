@@ -14,6 +14,8 @@ void cart_handler(void *arg);
 
 bool cart_on_edge(cart *c);
 
+int next_direction(vertex *s, vertex *d);
+
 void zero_path_weight(path *p, int c_index);
 
 void traverse_path(cart *c);

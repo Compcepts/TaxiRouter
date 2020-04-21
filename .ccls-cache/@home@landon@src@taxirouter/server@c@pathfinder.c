@@ -139,7 +139,7 @@ void init_pathfinder() {
 void cart_handler(void *arg) {
 
     cart *c = (cart*) arg;
-    vertex* d;
+    vertex *d, *v1, *v2;
 
     struct sockaddr_in server, client;
     int socket_desc = socket(AF_INET, SOCK_STREAM, 0),
@@ -147,18 +147,20 @@ void cart_handler(void *arg) {
         conn,
         port = 1234 + c->index;
 
-    char mes[5][16] = {
+    char mes[7][16] = {
     "stop",
     "drive",
-    "turnleft",
-    "turnright",
-    "shutdown"
+    "shutdown",
+    "left",
+    "up",
+    "right",
+    "down"
 };
 
     char *response = (char *) malloc(20*sizeof(char));
 
     if (socket_desc == -1) {
-        printf("Could not open socket");
+        puts("Could not open socket");
 
         return;
     }
@@ -226,24 +228,31 @@ void cart_handler(void *arg) {
             while (strcmp(response, "stopped") != 0) {
                 recv(new_socket, response, 20, 0);
             }
-            puts("trying to move");
-            if (cart_on_edge(c) == TRUE) {
-                puts("collision");
-                pthread_mutex_lock(&path_lock);
-                zero_path_weight(c->curr_path, c->index);
-                delete_path(c->curr_path);
-                find_optimal_path(c, d);
-                pthread_mutex_unlock(&path_lock);
-                if (cart_on_edge(c) == TRUE) {
-                    puts("collision not avoided");
-                }
-            }
-            puts("okay to move");
-            traverse_path(c);
-            send(new_socket, mes[1], strlen(mes[1]), 0);
             strcpy(response, "null");
-        }
 
+
+            puts("starting to move");
+            switch (next_direction(c->curr_loc, queue_head_edge(c->curr_path))) {
+                case 0:
+                    send(new_socket, mes[3], strlen(mes[3]), 0);
+                case 1:
+                    send(new_socket, mes[4], strlen(mes[4]), 0);
+                case 2:
+                    send(new_socket, mes[5], strlen(mes[5]), 0);
+                case 3:
+                    send(new_socket, mes[6], strlen(mes[6]), 0);
+            }
+
+            while (strcmp(response, "turned") != 0) {
+                recv(new_socket, response, 20, 0);
+            }
+            strcpy(response, "null");
+
+            traverse_path(c);
+
+            send(new_socket, mes[1], strlen(mes[1]), 0);
+        }
+        send(new_socket, mes[0], strlen(mes[0]), 0);
 
         c->curr_path->start = c->curr_loc;
 
@@ -252,6 +261,8 @@ void cart_handler(void *arg) {
     pthread_mutex_unlock(&(c->curr_loc->v_mut));
     pthread_mutex_unlock(&vertex_lock);
 
+    send(new_socket, mes[2], strlen(mes[2]), 0);
+
     strcpy(response, "");
     free(response);
 
@@ -259,6 +270,30 @@ void cart_handler(void *arg) {
     close(socket_desc);
 }
 
+
+
+int next_direction(vertex *s, vertex *d) {
+    int x_diff, y_diff;
+
+    x_diff = d->coordx - s->coordx;
+    y_diff = d->coordy - s->coordy;
+
+    if (x_diff < 0) {
+        return 0;
+    }
+
+    if (y_diff > 0) {
+        return 1;
+    }
+
+    if (x_diff > 0) {
+        return 2;
+    }
+
+    if (y_diff < 0) {
+        return 3;
+    }
+}
 
 
 
