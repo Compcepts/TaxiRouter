@@ -47,10 +47,10 @@ def right():
     GPIO.output(12, True)
     GPIO.output(15, False)
 
-speed = 28
+speed = 30
 
 turn_fast = 50
-veer = 40
+veer = 43
 
 def drive():
     start = time.time()
@@ -91,7 +91,7 @@ def drive():
                 left_motor.start(speed)
                 right_motor.start(speed)
 
-
+    time.sleep(0.6)
     stop()
 
     time.sleep(2)
