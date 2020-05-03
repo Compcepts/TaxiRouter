@@ -52,12 +52,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         if data == 'drive':
             s.send('stopped'.encode())
 
-           
-        elif data.decode() == 'up' or data.decode() == 'down' or data.decode() == 'right' or data.decode() == 'left':
+
+        elif data == 'up' or data == 'down' or data == 'right' or data == 'left':
+           print("here")
            s.send('turned'.encode())
 
-         
-        elif data.decode() == 'shutdown':
+
+        elif data == 'shutdown':
            cart.shutdown()
            s.close()
            break
