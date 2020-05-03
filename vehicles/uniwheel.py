@@ -49,58 +49,56 @@ def right():
 
 speed = 30
 
-turn_fast = 45
-turn_slow = 5
+turn_fast = 70
+veer = 50
 
 def drive():
+    start = time.time()
+
+    left_motor.start(speed+5)
+    right_motor.start(speed+5)
+
+    time.sleep(0.15)
 
     forward()
-
-    left_motor.start(35)
-    right_motor.start(35)
-
-    time.sleep(0.5)
 
     while True:
         left_s = GPIO.input(37)
         right_s = GPIO.input(3)
-
-        intersection = GPIO.input(18)
-
-        #if intersection == 1:
-            #break
 
         if right_s == 1 and left_s == 1:
             break
 
         elif left_s == 1 and right_s == 0:
             left()
-            left_motor.start(turn_fast-15)
-            right_motor.start(turn_fast)
-
+            left_motor.start(veer-15)
+            right_motor.start(veer)
+            start = time.time()
 
         elif left_s == 0 and right_s == 1:
             right()
-            left_motor.start(turn_fast)
-            right_motor.start(turn_fast-15)
+            left_motor.start(veer)
+            right_motor.start(veer-15)
+            start = time.time()
 
         else:
             forward()
-            left_motor.start(speed+5)
-            right_motor.start(speed)
 
-    reverse()
-
-    left_motor.start(speed)
-    right_motor.start(speed)
-
-    time.sleep(0.1)
+            if time.time() - start < 2.0:
+                left_motor.start(speed)
+                right_motor.start(speed)
+            else:
+                left_motor.start(speed-5)
+                right_motor.start(speed-5)
 
     stop()
 
+    time.sleep(2)
+
 def stop():
-    left_motor.start(0)
-    right_motor.start(0)
+    reverse()
+    left_motor.start(5)
+    right_motor.start(5)
 
 def turn_right():
     global c_dir
@@ -131,13 +129,8 @@ def turn_left():
     global c_dir
     left()
 
-    left_motor.start(turn_fast+10)
-    right_motor.start(turn_fast+10)
-
-    time.sleep(0.25)
-
-    left_motor.start(turn_fast+25)
-    right_motor.start(turn_fast+25)
+    left_motor.start(turn_fast)
+    right_motor.start(turn_fast)
 
     while True:
 
@@ -146,6 +139,8 @@ def turn_left():
         if intersection == 1:
             break
 
+    time.sleep(0.1)
+
     while True:
 
         intersection = GPIO.input(18)
@@ -153,31 +148,19 @@ def turn_left():
         if intersection == 0:
             break
 
-    forward()
-
-    right_motor.start(speed)
-    left_motor.start(speed)
-
-    time.sleep(0.5)
 
     stop()
 
     c_dir = (c_dir+3)%4
 
+    time.sleep(2)
 
-
-   
 def turn_around():
     global c_dir
     left()
 
-    left_motor.start(turn_fast+10)
-    right_motor.start(turn_fast+10)
-
-    time.sleep(0.25)
-
-    left_motor.start(turn_fast+20)
-    right_motor.start(turn_fast+20)
+    left_motor.start(turn_fast)
+    right_motor.start(turn_fast)
 
     while True:
 
@@ -186,7 +169,7 @@ def turn_around():
         if intersection == 1:
             break
 
-    time.sleep(0.25)
+    time.sleep(0.1)
 
     while True:
 
@@ -195,7 +178,18 @@ def turn_around():
         if intersection == 0:
             break
 
-    time.sleep(0.25)
+    stop()
+
+    reverse()
+    left_motor.start(speed)
+    right_motor.start(speed)
+    time.sleep(1)
+
+    stop()
+
+    left()
+    left_motor.start(turn_fast+10)
+    right_motor.start(turn_fast+10)
 
     while True:
 
@@ -204,7 +198,7 @@ def turn_around():
         if intersection == 1:
             break
 
-    time.sleep(0.25)
+    time.sleep(0.1)
 
     while True:
 
@@ -218,7 +212,7 @@ def turn_around():
     right_motor.start(speed)
     left_motor.start(speed)
 
-    time.sleep(0.5)
+    time.sleep(0.25)
 
     stop()
 
