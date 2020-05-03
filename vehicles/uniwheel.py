@@ -47,10 +47,10 @@ def right():
     GPIO.output(12, True)
     GPIO.output(15, False)
 
-speed = 30
+speed = 28
 
-turn_fast = 70
-veer = 50
+turn_fast = 50
+veer = 40
 
 def drive():
     start = time.time()
@@ -84,12 +84,13 @@ def drive():
         else:
             forward()
 
-            if time.time() - start < 2.0:
+            if time.time() - start < 1.0:
+                left_motor.start(speed+5)
+                right_motor.start(speed+5)
+            else:
                 left_motor.start(speed)
                 right_motor.start(speed)
-            else:
-                left_motor.start(speed-5)
-                right_motor.start(speed-5)
+
 
     stop()
 
@@ -97,8 +98,8 @@ def drive():
 
 def stop():
     reverse()
-    left_motor.start(5)
-    right_motor.start(5)
+    left_motor.start(1)
+    right_motor.start(1)
 
 def turn_right():
     global c_dir
@@ -148,6 +149,13 @@ def turn_left():
         if intersection == 0:
             break
 
+    time.sleep(0.15)
+
+    forward()
+    left_motor.start(speed)
+    right_motor.start(speed)
+
+    time.sleep(0.5)
 
     stop()
 
