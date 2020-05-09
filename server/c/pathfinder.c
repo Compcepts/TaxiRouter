@@ -205,7 +205,7 @@ void cart_handler(void *arg) {
     printf("%d cart starts\n", c->index);
 
     pthread_mutex_lock(&vertex_lock);
-    pthread_mutex_lock(&(c->curr_loc->v_mut));
+    c->curr_loc->busy = TRUE;
 
     while (vertex_index < PASSENGERS) {
         printf("%d cart taking its turn\n", c->index);
@@ -276,8 +276,6 @@ void cart_handler(void *arg) {
         pthread_mutex_lock(&vertex_lock);
     }
 
-
-    pthread_mutex_unlock(&(c->curr_loc->v_mut));
     pthread_mutex_unlock(&vertex_lock);
 
     send(new_socket, mes[2], strlen(mes[2]), 0);
@@ -367,9 +365,13 @@ void traverse_path(cart *c) {
     edge *e;
     vertex *d = get_destination(c);
 
-    pthread_mutex_unlock(&(c->curr_loc->v_mut));
+    while (d->busy) {
+        sleep(1);
+    }
 
-    pthread_mutex_lock(&(d->v_mut));
+    c->curr_loc->busy = FALSE;
+
+    d->busy = TRUE;
 
     decrement_edges(c->curr_path, c->index);
 

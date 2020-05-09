@@ -25,7 +25,7 @@ void init_graph() {
         for (j = 0; j < HORIZ_ROADS; j++) {
             gr.vertices[i][j].coordx = i;
             gr.vertices[i][j].coordy = j;
-            pthread_mutex_init(&(gr.vertices[i][j].v_mut), NULL);
+            gr.vertices[i][j].busy = FALSE;
         }
     }
 

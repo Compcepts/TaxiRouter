@@ -6,11 +6,11 @@
 #include <pthread.h>
 
 
-typedef int bool;
+typedef char bool;
 
 typedef struct vertex {
     int coordx, coordy;
-    pthread_mutex_t v_mut;
+    bool busy;
 } vertex;
 
 typedef struct edge {
