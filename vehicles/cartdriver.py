@@ -2,18 +2,9 @@ import RPi.GPIO as GPIO
 import time
 
 
-from enum import Enum
-
-class Direction(Enum):
-    LEFT = 0
-    UP = 1
-    RIGHT = 2
-    DOWN = 3
-
-
 # Cart global variables:
 
-c_dir = UP
+c_dir = 1
 
 GPIO.setmode(GPIO.BOARD)
 
@@ -33,28 +24,28 @@ GPIO.setup(3, GPIO.IN)
 
 
 def forward():
-	GPIO.output(11, True)
-	GPIO.output(16, True)
-	GPIO.output(12, False)
-	GPIO.output(15, False)
+    GPIO.output(11, True)
+    GPIO.output(16, True)
+    GPIO.output(12, False)
+    GPIO.output(15, False)
 
 def reverse():
-	GPIO.output(11, False)
-	GPIO.output(16, False)
-	GPIO.output(12, True)
-	GPIO.output(15, True)
+    GPIO.output(11, False)
+    GPIO.output(16, False)
+    GPIO.output(12, True)
+    GPIO.output(15, True)
 
 def left():
-	GPIO.output(11, True)
-	GPIO.output(16, False)
-	GPIO.output(12, False)
-	GPIO.output(15, True)
+    GPIO.output(11, True)
+    GPIO.output(16, False)
+    GPIO.output(12, False)
+    GPIO.output(15, True)
 
 def right():
-	GPIO.output(11, False)
-	GPIO.output(16, True)
-	GPIO.output(12, True)
-	GPIO.output(15, False)
+    GPIO.output(11, False)
+    GPIO.output(16, True)
+    GPIO.output(12, True)
+    GPIO.output(15, False)
 
 speed = 10
 
@@ -70,47 +61,47 @@ def drive():
 
     time.sleep(0.5)
 
-	while True:
-		left_s = GPIO.input(37)
-		right_s = GPIO.input(3)
+    while True:
+        left_s = GPIO.input(37)
+        right_s = GPIO.input(3)
 
-		intersection = GPIO.input(18)
+        intersection = GPIO.input(18)
 
-		if intersection == 1:
-			break
+        if intersection == 1:
+            break
 
-		if left_s == 1:
-			left()
-			left_motor.start(turn_fast+10)
-			right_motor.start(turn_fast+10)
+        if left_s == 1:
+            left()
+            left_motor.start(turn_fast+10)
+            right_motor.start(turn_fast+10)
 
-			time.sleep(0.25)
+            time.sleep(0.25)
 
-			left_motor.start(turn_fast)
-			right_motor.start(turn_fast)
+            left_motor.start(turn_fast)
+            right_motor.start(turn_fast)
 
 
-		elif right_s == 1:
-			right()
-			left_motor.start(turn_fast+10)
-			right_motor.start(turn_fast+10)
+        elif right_s == 1:
+            right()
+            left_motor.start(turn_fast+10)
+            right_motor.start(turn_fast+10)
 
-			time.sleep(0.25)
+            time.sleep(0.25)
 
-			left_motor.start(turn_fast)
-			right_motor.start(turn_fast)
+            left_motor.start(turn_fast)
+            right_motor.start(turn_fast)
 
-		else:
-			forward()
-			left_motor.start(speed+5)
-			right_motor.start(speed)
+        else:
+            forward()
+            left_motor.start(speed+5)
+            right_motor.start(speed)
 
-	reverse()
+    reverse()
 
-	left_motor.start(speed+10)
-	right_motor.start(speed+10)
+    left_motor.start(speed+10)
+    right_motor.start(speed+10)
 
-	time.sleep(1)
+    time.sleep(1)
 
 
 def stop():
@@ -120,21 +111,21 @@ def stop():
 def turn_right():
     right()
 
-	left_motor.start(turn_fast+10)
-	right_motor.start(turn_fast+10)
+    left_motor.start(turn_fast+10)
+    right_motor.start(turn_fast+10)
 
-	time.sleep(0.25)
+    time.sleep(0.25)
 
     while True:
 
 
-		left_s = GPIO.input(37)
-		right_s = GPIO.input(3)
+        left_s = GPIO.input(37)
+        right_s = GPIO.input(3)
     
-		intersection = GPIO.input(18)
+        intersection = GPIO.input(18)
 
-		left_motor.start(turn_fast)
-		right_motor.start(turn_fast)
+        left_motor.start(turn_fast)
+        right_motor.start(turn_fast)
 
         if intersection == 1:
             break
@@ -144,23 +135,47 @@ def turn_right():
 def turn_left():
     left()
 
-	left_motor.start(turn_fast+10)
-	right_motor.start(turn_fast+10)
+    left_motor.start(turn_fast+10)
+    right_motor.start(turn_fast+10)
 
-	time.sleep(0.25)
+    time.sleep(0.25)
 
     while True:
 
 
-		left_s = GPIO.input(37)
-		right_s = GPIO.input(3)
+        left_s = GPIO.input(37)
+        right_s = GPIO.input(3)
 
-		intersection = GPIO.input(18)
+        intersection = GPIO.input(18)
 
-		left_motor.start(turn_fast)
-		right_motor.start(turn_fast)
+        left_motor.start(turn_fast+40)
+        right_motor.start(turn_fast+40)
 
         if intersection == 1:
+            break
+
+    while True:
+
+        intersection = GPIO.input(18)
+
+        left_motor.start(turn_fast+40)
+        right_motor.start(turn_fast+40)
+
+        if intersection == 0:
+            break
+
+    forward()
+       
+    right_motor.start(speed)
+    left_motor.start(speed)
+
+    time.sleep(1)
+
+    while True:
+
+        intersection = GPIO.input(18)
+
+        if intersection == 0:
             break
 
     c_dir = (c_dir+3)%4
