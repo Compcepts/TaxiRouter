@@ -2,10 +2,8 @@ import socket
 import sys
 import cartdriver as cart
 
-HOST = '127.0.0.1'
+HOST = 'server_ip_here'
 PORT = 1234 + int(sys.argv[1])
-
-
 
 
 def dir_from_str(dir_str):
@@ -17,8 +15,6 @@ def dir_from_str(dir_str):
       return 2
    elif dir_str == 'down':
       return 3
-
-
 
 
 def process_command(command):
@@ -39,32 +35,29 @@ def process_command(command):
        print('Invalid command')
 
 
-
-
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
-    s.send('stopped'.encode())
     while True:
 
         data = s.recv(1024)
         if not data:
             break
-        #conn.sendall(data)
 
-        print(data.decode())
+        data = data.decode()
 
-        process_command(data.decode())
+        print(data)
 
-        if data.decode() == 'drive':
+        process_command(data)
+
+        if data == 'drive':
             s.send('stopped'.encode())
 
            
         elif data.decode() == 'up' or data.decode() == 'down' or data.decode() == 'right' or data.decode() == 'left':
-           while not cart.c_dir == dir_from_str(data.decode()):
-              time.sleep(0.05)
            s.send('turned'.encode())
 
          
         elif data.decode() == 'shutdown':
-            s.close()
-            break
+           cart.shutdown()
+           s.close()
+           break

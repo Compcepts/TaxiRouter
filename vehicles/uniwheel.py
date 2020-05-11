@@ -141,16 +141,10 @@ def turn_left():
 
     while True:
 
-
-        left_s = GPIO.input(37)
-        right_s = GPIO.input(3)
-
         intersection = GPIO.input(18)
 
         if intersection == 1:
             break
-
-
 
     while True:
 
@@ -166,10 +160,13 @@ def turn_left():
 
     time.sleep(0.5)
 
+    stop()
 
     c_dir = (c_dir+3)%4
 
 
+
+   
 def turn_around():
     global c_dir
     left()
@@ -221,8 +218,9 @@ def turn_around():
     right_motor.start(speed)
     left_motor.start(speed)
 
-    time.sleep(1)
+    time.sleep(0.5)
 
+    stop()
 
     c_dir = (c_dir+2)%4
 
