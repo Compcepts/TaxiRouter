@@ -1,8 +1,8 @@
 #ifndef CONSTS
 #define CONSTS
 
-#define VERT_ROADS 8
-#define HORIZ_ROADS 8
+#define VERT_ROADS 4
+#define HORIZ_ROADS 4
 
 #define ROADS_VERT (VERT_ROADS-1)
 #define ROADS_HORIZ (HORIZ_ROADS-1)
@@ -11,7 +11,7 @@
 
 #define EDGE_OFFSET (POSSIBLE_PATHS/4)
 
-#define CARTS 4
+#define CARTS 1
 
 #define PASSENGERS 100
 
