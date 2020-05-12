@@ -13,7 +13,7 @@
 
 #define CARTS 1
 
-#define PASSENGERS 100
+#define PASSENGERS 4
 
 #define FALSE 0
 #define TRUE 1

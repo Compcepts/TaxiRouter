@@ -41,31 +41,7 @@ static int connections = 0;
 pthread_mutex_t path_lock, vertex_lock;
 
 int passengers[PASSENGERS][2] = {
-    {2, 5}, {0, 5}, {4, 5}, {2, 3},
-    {3, 6}, {5, 7}, {1, 5}, {0, 7},
-    {7, 2}, {4, 2}, {0, 1}, {4, 1},
-    {5, 3}, {2, 6}, {1, 5}, {3, 7},
-    {6, 3}, {7, 0}, {2, 1}, {6, 5},
-    {2, 5}, {0, 5}, {4, 5}, {2, 3},
-    {3, 6}, {5, 7}, {1, 5}, {0, 7},
-    {7, 2}, {4, 2}, {0, 1}, {4, 1},
-    {5, 3}, {2, 6}, {1, 5}, {3, 7},
-    {6, 3}, {7, 0}, {2, 1}, {6, 5},
-    {2, 5}, {0, 5}, {4, 5}, {2, 3},
-    {3, 6}, {5, 7}, {1, 5}, {0, 7},
-    {7, 2}, {4, 2}, {0, 1}, {4, 1},
-    {5, 3}, {2, 6}, {1, 5}, {3, 7},
-    {6, 3}, {7, 0}, {2, 1}, {6, 5},
-    {2, 5}, {0, 5}, {4, 5}, {2, 3},
-    {3, 6}, {5, 7}, {1, 5}, {0, 7},
-    {7, 2}, {4, 2}, {0, 1}, {4, 1},
-    {5, 3}, {2, 6}, {1, 5}, {3, 7},
-    {6, 3}, {7, 0}, {2, 1}, {6, 5},
-    {2, 5}, {0, 5}, {4, 5}, {2, 3},
-    {3, 6}, {5, 7}, {1, 5}, {0, 7},
-    {7, 2}, {4, 2}, {0, 1}, {4, 1},
-    {5, 3}, {2, 6}, {1, 5}, {3, 7},
-    {6, 3}, {7, 0}, {2, 1}, {6, 5}
+    {2, 3}, {1, 2}, {0, 0}, {3, 3}
 };
 
 
@@ -209,16 +185,21 @@ void cart_handler(void *arg) {
             switch (next_direction(c->curr_loc, curr_edge->dest)) {
                 case LEFT:
                     send(new_socket, mes[3], strlen(mes[3]), 0);
+                    break;
                 case UP:
                     send(new_socket, mes[4], strlen(mes[4]), 0);
+                    break;
                 case RIGHT:
                     send(new_socket, mes[5], strlen(mes[5]), 0);
+                    break;
                 case DOWN:
                     send(new_socket, mes[6], strlen(mes[6]), 0);
+                    break;
             }
 
             while (strcmp(response, "turned") != 0) {
-                recv(new_socket, response, 20, 0);
+                recv(new_socket, response, strlen("turned"), 0);
+                response[6] = 0;
             }
             strcpy(response, "null");
 
@@ -239,7 +220,7 @@ void cart_handler(void *arg) {
 
             puts("handling movement");
             while (strcmp(response, "stopped") != 0) {
-                recv(new_socket, response, 20, 0);
+                recv(new_socket, response, strlen("stopped"), 0);
             }
             strcpy(response, "null");
 
