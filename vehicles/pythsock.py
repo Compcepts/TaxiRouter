@@ -2,7 +2,7 @@ import socket
 import sys
 import cartdriver as cart
 
-HOST = 'server_ip_here'
+HOST = '192.168.4.85'
 PORT = 1234 + int(sys.argv[1])
 
 

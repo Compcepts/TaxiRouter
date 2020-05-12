@@ -93,50 +93,23 @@ int main() {
     }
 
     for (i = 0; i < CARTS; i++) {
+        printf("\ninitializing cart %d at [%d, %d]\n", i, i*2, i*2);
         carts[i].curr_loc = find_vertex((i*2),(i*2));
         carts[i].index = i;
     }
 
-    pthread_create(&(t[0]), NULL, cart_handler, (void *) &(carts[0]));
-    pthread_create(&(t[1]), NULL, cart_handler, (void *) &(carts[1]));
-    pthread_create(&(t[2]), NULL, cart_handler, (void *) &(carts[2]));
-    pthread_create(&(t[3]), NULL, cart_handler, (void *) &(carts[3]));
+    for (i = 0; i < CARTS; i++) {
+        pthread_create(&(t[i]), NULL, cart_handler, (void *) &(carts[i]));
+    }
 
-    pthread_join(t[0], NULL);
-    pthread_join(t[1], NULL);
-    pthread_join(t[2], NULL);
-    pthread_join(t[3], NULL);
+    for (i = 0; i < CARTS; i++) {
+        pthread_join(t[i], NULL);
+    }
 
 
     return 0;
 }
 
-
-/*
-void init_pathfinder() {
-
-    int i;
-   
-    printf("Initializing graph\n");
-    init_graph();
-
-    printf("Finding paths\n");
-
-    if (pthread_mutex_init(&path_lock, NULL) != 0) {
-        printf("\nmutex 1 init failed\n");
-        return;
-    }
-
-    if (pthread_mutex_init(&vertex_lock, NULL) != 0) {
-        printf("\nmutex 2 init failed\n");
-        return;
-    }
-
-    for (i = 0; i < CARTS; i++) {
-        carts[i].curr_loc = find_vertex(0,0);
-        carts[i].index = i;
-    }
-}*/
 
 
 void cart_handler(void *arg) {
@@ -208,7 +181,6 @@ void cart_handler(void *arg) {
     c->curr_loc->busy = TRUE;
 
     while (vertex_index < PASSENGERS) {
-        printf("%d cart taking its turn\n", c->index);
         d = find_vertex(passengers[vertex_index][0], passengers[vertex_index][1]);
 
         printf("passenger #: %d\n", vertex_index);
@@ -224,13 +196,15 @@ void cart_handler(void *arg) {
         printf("cart index: %d\n", c->index);
 
 
-        /*print_path(c->curr_path);*/
+        print_path(c->curr_path);
 
         pthread_mutex_unlock(&path_lock);
 
         while (empty_eq(c->curr_path->edge_queue_tail) == FALSE) {
 
             curr_edge = queue_head_edge(c->curr_path);
+
+
             puts("finding direction");
             switch (next_direction(c->curr_loc, curr_edge->dest)) {
                 case LEFT:
@@ -248,16 +222,19 @@ void cart_handler(void *arg) {
             }
             strcpy(response, "null");
 
+
             insert_tq(find_tq(curr_edge), c);
 
+
             send(new_socket, mes[7], strlen(mes[7]), 0);
+
 
             while (tq_head(find_tq(curr_edge)) != c) {
                 sleep(1);
             }
 
-            traverse_path(c);
 
+            traverse_path(c);
             send(new_socket, mes[1], strlen(mes[1]), 0);
 
             puts("handling movement");
@@ -265,6 +242,7 @@ void cart_handler(void *arg) {
                 recv(new_socket, response, 20, 0);
             }
             strcpy(response, "null");
+
 
             remove_tq(find_tq(curr_edge));
         }
