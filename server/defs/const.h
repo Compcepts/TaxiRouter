@@ -1,8 +1,19 @@
 #ifndef CONSTS
 #define CONSTS
 
+
+/* VALUES TO BE CHANGED BY USER ALLOWING FOR VARYING
+ * CARTS, PASSENGER, AND/OR ROADS */
+
+#define CARTS 1
+#define PASSENGERS 4
+
 #define VERT_ROADS 4
 #define HORIZ_ROADS 4
+
+
+
+/* USED AS PROPERTIES OF GRID SHAPED GRAPH */
 
 #define ROADS_VERT (VERT_ROADS-1)
 #define ROADS_HORIZ (HORIZ_ROADS-1)
@@ -11,14 +22,12 @@
 
 #define EDGE_OFFSET (POSSIBLE_PATHS/4)
 
-#define CARTS 1
 
-#define PASSENGERS 4
+/* MISC */
 
 #define FALSE 0
 #define TRUE 1
 
-/*#define NULL ((void*)0)*/
 
 enum direction {
     LEFT,
