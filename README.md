@@ -25,6 +25,8 @@ HOW TO USE:
             ii. You can choose how you want to implement these functions with
             your choice of sensors and motors - just make sure you can guarantee
             proper movement along your map.
+        7. To run server, run the pathfinder object file
+        8. To run the cart, run the command 'python3 pythsock <cart_index>'
     
     NOTE:
         When making your map, it needs to be made as a grid, and your cart must
