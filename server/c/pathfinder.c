@@ -265,6 +265,17 @@ int passengers[PASSENGERS][2] = {
     {2, 3}, {1, 2}, {0, 0}, {3, 3}
 };
 
+/* Cart commands */
+char mes[8][16] = {
+    "stop",
+    "drive",
+    "shutdown",
+    "left",
+    "up",
+    "right",
+    "down",
+    "avoid"
+};
 
 /* Main entry point of server */
 
@@ -329,17 +340,6 @@ void cart_handler(void *arg) {
         conn,
         port = 1234 + c->index;
 
-    /* Cart commands */
-    char mes[8][16] = {
-    "stop",
-    "drive",
-    "shutdown",
-    "left",
-    "up",
-    "right",
-    "down",
-    "avoid"
-};
 
     char *response = (char *) malloc(20*sizeof(char));
 

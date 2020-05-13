@@ -1,3 +1,5 @@
+# This file is madness - just a bunch of arbitrary procedures
+
 import RPi.GPIO as GPIO
 import time
 
@@ -91,7 +93,12 @@ def drive():
                 left_motor.start(speed)
                 right_motor.start(speed)
 
+    forward()
+    left_motor.start(speed)
+    right_motor.start(speed)
+
     time.sleep(0.6)
+
     stop()
 
     time.sleep(2)
@@ -105,24 +112,34 @@ def turn_right():
     global c_dir
     right()
 
-    left_motor.start(turn_fast+10)
-    right_motor.start(turn_fast+10)
-
-    time.sleep(0.25)
+    left_motor.start(turn_fast)
+    right_motor.start(turn_fast)
 
     while True:
 
-
-        left_s = GPIO.input(37)
-        right_s = GPIO.input(3)
-
         intersection = GPIO.input(18)
-
-        left_motor.start(turn_fast)
-        right_motor.start(turn_fast)
 
         if intersection == 1:
             break
+
+    time.sleep(0.1)
+
+    while True:
+
+        intersection = GPIO.input(18)
+
+        if intersection == 0:
+            break
+
+    time.sleep(0.15)
+
+    forward()
+    left_motor.start(speed)
+    right_motor.start(speed)
+
+    time.sleep(0.5)
+
+    stop()
 
     c_dir = (c_dir+1)%4
 
@@ -186,18 +203,7 @@ def turn_around():
         if intersection == 0:
             break
 
-    stop()
-
-    reverse()
-    left_motor.start(speed)
-    right_motor.start(speed)
-    time.sleep(1)
-
-    stop()
-
-    left()
-    left_motor.start(turn_fast+10)
-    right_motor.start(turn_fast+10)
+    time.sleep(0.1)
 
     while True:
 
