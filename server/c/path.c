@@ -1,21 +1,44 @@
 /*
-Implementation of paths
 
+This file contains basic utility functions for paths whether that
+be creation, deletion, access, or manipulation. Paths are simply
+a singly, circularly linked list designed to represent a queue with
+constant enqueue/dequeue runtimes. This is done by accesing the queue
+by the tail instead of the head, and inserting in between the tail
+and the head as well as removing the element between the tail and
+what would be the new head. The paths also hold an edge, which will
+serve to allow us to make decisions on travel related to both vertices
+and edge (and subsequently the opposite edge) states. Visually, path
+queues can be modeled as such:
 
-METHODS:
-
+           ############    ############    ############
+    t      #          #    #          #    #          #
+    a p___\#   tail   #___\#   head   #___\#   next   #___\ ...
+    i t   /#          #   /#          #   /#          #   /    |
+    l r    ############    ############    ############        |
+                / \                                            |
+                 |                                             |
+                 |_____________________________________________|
 
 */
 
+
+/* Standard libraries */
 #include <stdlib.h>
 #include <stdio.h>
 
+/* User defined type and constant inclusions */
 #include "../defs/types.h"
 #include "../defs/const.h"
 
-#include "../h/path.h"
+/* Graph model functionality */
 #include "../h/graph.h"
 
+/* method declarations, making compiler happy */
+#include "../h/path.h"
+
+
+/* Dynamic path allocation */
 
 path* new_path(edge *e) {
     path* pth;
@@ -30,6 +53,9 @@ path* new_path(edge *e) {
     return pth;
 }
 
+
+/* Path allocation without edge */
+
 path* empty_path() {
     path* pth;
 
@@ -43,6 +69,9 @@ path* empty_path() {
     return pth;
 }
 
+
+/* Dynamic allocation of edge queues */
+
 edge_queue* new_eq(edge *e) {
     edge_queue *eq;
     eq = (edge_queue*) malloc(sizeof(edge_queue));
@@ -51,6 +80,9 @@ edge_queue* new_eq(edge *e) {
 
     return eq;
 }
+
+
+/* enqueue edge into an edge queue */
 
 void enqueue_edge(edge_queue **tail, edge *e) {
     edge_queue *next;
@@ -71,6 +103,9 @@ void enqueue_edge(edge_queue **tail, edge *e) {
         *tail = next;
     }
 }
+
+
+/* dequeue edge from edge queue */
 
 edge* dequeue_edge(edge_queue **tail) {
     edge *e;
@@ -97,6 +132,9 @@ edge* dequeue_edge(edge_queue **tail) {
     return e;
 }
 
+
+/* Return head of the edge queue */
+
 edge* queue_head_edge(path *p) {
     if(p->edge_queue_tail == NULL) {
         return NULL;
@@ -106,6 +144,9 @@ edge* queue_head_edge(path *p) {
     }
     return p->edge_queue_tail->next_eq->curr_edge;
 }
+
+
+/* Create a dynamically allocated copy of current path */
 
 path* copy_path(path *p) {
     path *copy = empty_path();
@@ -132,6 +173,9 @@ path* copy_path(path *p) {
     return copy;
 }
 
+
+/* Decrement edge weights in a path of the given index */
+
 void decrement_edges(path *p, int c) {
     edge_queue *tail = p->edge_queue_tail, *next;
     
@@ -152,6 +196,9 @@ void decrement_edges(path *p, int c) {
         next->curr_edge->weight[c]--;
     }
 }
+
+
+/* Increment edge weights in a path of the given index */
 
 void increment_edges(path *p, int c) {
     edge_queue *tail = p->edge_queue_tail, *next;
@@ -174,6 +221,9 @@ void increment_edges(path *p, int c) {
     }
 }
 
+
+/* UNUSED HELPER FUNCTIONS */
+
 void add_cost(path *p, int c) {
     p->cost += c;
 }
@@ -181,6 +231,11 @@ void add_cost(path *p, int c) {
 void add_length(path *p, int l) {
     p->length += l;
 }
+
+/* ----------------------- */
+
+
+/* Find the next vertex in a path */
 
 vertex* next_vertex(path *p) {
     if (p == NULL) {
@@ -192,12 +247,18 @@ vertex* next_vertex(path *p) {
     return p->edge_queue_tail->curr_edge->dest;
 }
 
+
+/* Determine if the current edge queue is empty */
+
 bool empty_eq(edge_queue *tail) {
     if (tail == NULL) {
         return TRUE;
     }
     return FALSE;
 }
+
+
+/* Delete edge queue element */
 
 void delete_eq(edge_queue *eq) {
     eq->curr_edge = NULL;
@@ -206,11 +267,17 @@ void delete_eq(edge_queue *eq) {
     free(eq);
 }
 
+
+/* Delete entire edge queue */
+
 void delete_full_eq(edge_queue **tail) {
     while (*tail != NULL) {
         dequeue_edge(tail);
     }
 }
+
+
+/* Free up all data associated with a path */
 
 void delete_path(path *old) {
     delete_full_eq(&(old->edge_queue_tail));
@@ -220,6 +287,9 @@ void delete_path(path *old) {
 
     free(old);
 }
+
+
+/* Print all edges in a given path */
 
 void print_path(path *p) {
     edge_queue *curr = p->edge_queue_tail->next_eq;

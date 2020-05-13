@@ -1,22 +1,76 @@
 /*
 
-Basic implementation of weighted, bidirectional graph
+This file contains the methods for our basic state space model,
+a weighted bidirectional graph shaped as a grid with m*n vertices.
+Each edge has an opposing edge that together make up one road. For
+this reason, weights of an edge are usually set the same as an
+opposing edge as the road would be occupied by a given cart for
+both edges. On the topic of weights, the weights themselves
+have a somewhat nuanced meaning. Each edge has an individual
+weight for each cart which represents the nummber of turns until
+the cart is on that pair of edges (otherwise known as a road).
+This allows us to make some informed predictions as to when cars
+will reach certain roads thus allowing for some basic collisions
+predictions. The following is a basic diagram of the graph:
+
+     [0,                                           [m-1,
+     n-1]                                          n-1]
+     o________o________o________o         o________o
+     |        |        |        |         |        |
+     |[0,     |[1,     |[2,     |         |[m-2,   |
+     |n-2]    |n-2]    |n-2]    |         |n-2]    |
+     o________o________o________o . . . . o________o
+
+     .        .        .                  .
+     .        .        .                  .
+     .        .        .                  .
+     o________o________o________o         o________o
+     |        |        |        |         |        |
+     |        |        |        |         |[m-2,   |
+     |[0, 2]  |[1, 2]  |[2, 2]  |         |2]      |
+     o________o________o________o . . . . o________o
+     |        |        |        |         |        |
+     |        |        |        |         |[m-2,   |
+     |[0, 1]  |[1, 1]  |[2, 1]  |         |1]      |
+     o________o________o________o . . . . o________o
+     |        |        |        |         |        |
+     |        |        |        |         |[m-2,   |
+     |[0, 0]  |[1, 0]  |[2, 0]  |         |0]      |
+     o________o________o________o . . . . o________o [m-1, 0]
 
 
-METHODS:
-
+Each of these vertices can be accessed via x, y coordinates
+and each edge can be accessed via source and destination
+vertices (as these are directed edges). All vertex and edge
+accesses are constant time, making the access/manipulation of
+our state space very efficient. It should also be noted that
+an edge can be used to access its opposite edge in constant
+time as well.
 
 */
+
+
+
+/* Standard libraries */
 #include <stdlib.h>
 #include <stdio.h>
-#include <pthread.h>
 
+/* User defined types and constants */
 #include "../defs/types.h"
 #include "../defs/const.h"
 
+/* Method declarations, making the compiler happy */
 #include "../h/graph.h"
 
+
+/* Our state space will live on the stack during the execution
+ * of our program. This works well for a road as we wont need
+ * to add/remove roads very often. It also reduces the risk of
+ * memory leakage */
 static graph gr;
+
+
+/* Initialize graph state space with "empty" values */
 
 void init_graph() {
     int i, j, k, c;
@@ -30,7 +84,8 @@ void init_graph() {
     }
 
     /* Initialize edges */
-    /* First 20 roads from left to right */
+
+    /* All edges from left to right */
     for (i = 0; i < (POSSIBLE_PATHS/4); i++) {
         j = i % ROADS_HORIZ;
         k = i / ROADS_HORIZ;
@@ -43,7 +98,7 @@ void init_graph() {
         }
     }
 
-    /* Next 20 roads from bottom to top */
+    /* All edges from bottom to top */
     for (i = 0; i < (POSSIBLE_PATHS/4); i++) {
         j = i / ROADS_VERT;
         k = i % ROADS_VERT;
@@ -56,7 +111,7 @@ void init_graph() {
         }
     }
 
-    /* Next 20 roads from right to left */
+    /* All edges from right to left */
     for (i = 0; i < (POSSIBLE_PATHS/4); i++) {
         j = i % ROADS_HORIZ;
         k = i / ROADS_HORIZ;
@@ -69,7 +124,7 @@ void init_graph() {
         }
     }
 
-    /* Last 20 roads from top to bottom */
+    /* All edges from top to bottom */
     for (i = 0; i < (POSSIBLE_PATHS/4); i++) {
         j = i / ROADS_VERT;
         k = i % ROADS_VERT;
@@ -83,6 +138,9 @@ void init_graph() {
     }
 }
 
+
+/* Access an edge based on a source and destination vertex, returning
+ * NULL if no edge exists between the two vertices */
 
 edge* find_edge(vertex *s, vertex *d) {
     int x1, y1, x2, y2, index;
@@ -123,13 +181,23 @@ edge* find_edge(vertex *s, vertex *d) {
     return &(gr.edges[index]);
 }
 
+
+/* Flip the source and destination vertices of current edge to find
+ * opposing edge, as this is the definition of oppposing edge */
+
 edge* opposite_edge(edge *e) {
     return find_edge(e->dest, e->src);
 }
 
+
+/* Set the weight of the given index of the given edge */
+
 void set_weight(edge *e, int w, int i) {
     e->weight[i] = w;
 }
+
+
+/* Find vertex from x, y coordinates */
 
 vertex* find_vertex(int x, int y) {
     if (x <= ROADS_HORIZ && y <= ROADS_VERT && x >= 0 && y >= 0) {
@@ -138,23 +206,25 @@ vertex* find_vertex(int x, int y) {
     return NULL;
 }
 
+
+/* Return the weight of the given edge and given index */
+
 int weight(edge *e, int i) {
     return e->weight[i];
 }
 
-/*
-void set_vertex_occupation(vertex *v, bool b) {
-    v->occupied = b;
-}
 
-bool vertex_occupied(vertex *v) {
-    return v->occupied;
-}
-*/
+/* Find the distance between two vertices, noting that this is not
+ * Euclidian but instead the absolute value of the change in x plus
+ * the absolute value of the change in y (this is a grid, and we
+ * can only travel in a straight line if the two vertices are adjacent) */
 
 int distance(vertex *src, vertex *dest) {
     return abs(src->coordx - dest->coordx) + abs(src->coordy - dest->coordy);
 }
+
+
+/* Format the edge data nicely and print */
 
 void print_edge(edge *e) {
     if (e != NULL){

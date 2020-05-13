@@ -1,18 +1,42 @@
+/*
+
+Travel queues are designed as an auxillary data structure to
+ensure that no two carts are driving on the same road at the
+same time. The queue structure is the same as those of paths,
+although the queues themselves can be referenced by an
+pointer held on the stack which can be indexed by an edge.
+These are not terribly important to the ideas of this project,
+it's more a solution to a problem created by the simplistic
+graph model. However, it should be noted that the travel queue
+will store a pointer to the carts attempting to travel on a
+road, so this is how we determine which cart travels next
+
+ */
 
 
-
-
+/* Standard libraries */
 #include <stdlib.h>
 #include <stdio.h>
 
+/* User defined types and constants */
 #include "../defs/const.h"
 #include "../defs/types.h"
 
+/* Include basic graph functionality */
 #include "../h/graph.h"
+
+/* Method declarations, make the compiler happy */
 #include "../h/travel_queue.h"
+
+
+
+/* The travel queues will be stored on the stack as each one
+ * corresponds to a stack-allocated pair of edges */
 
 static tq_tail tails[POSSIBLE_PATHS/2];
 
+
+/* Iniatialize all travel queues with NULL values */
 
 void init_travel_queue() {
     int i = 0;
@@ -22,6 +46,9 @@ void init_travel_queue() {
     }
 }
 
+
+/* Find a travel queue based on its corresponding edge, this
+ * accounts for opposite edges as well */
 
 tq_tail* find_tq(edge *e) {
     vertex *s = e->src, *d = e->dest;
@@ -46,6 +73,8 @@ tq_tail* find_tq(edge *e) {
 }
 
 
+/* Enqueue a cart into the travel queue */
+
 void insert_tq(tq_tail *tail, cart *c) {
     travel_queue *tq = new_tq(c), *old_tail = tail->tail;
 
@@ -68,6 +97,7 @@ void insert_tq(tq_tail *tail, cart *c) {
 }
 
 
+/* Dequeue from travel queues */
 
 void remove_tq(tq_tail *tail) {
     travel_queue *tq_tail = tail->tail, *rem_tq;
@@ -89,6 +119,7 @@ void remove_tq(tq_tail *tail) {
 }
 
 
+/* Return the cart at the head of the travel queue */
 
 cart* tq_head(tq_tail *tail) {
     if (tail->tail == NULL) {
@@ -101,6 +132,7 @@ cart* tq_head(tq_tail *tail) {
 }
 
 
+/* Dynamically allocate new travel queue element */
 
 travel_queue* new_tq(cart *c) {
     travel_queue *tq = (travel_queue *) malloc(sizeof(travel_queue));
@@ -111,6 +143,8 @@ travel_queue* new_tq(cart *c) {
     return tq;
 }
 
+
+/* Delete travel queue element */
 
 void delete_tq(travel_queue *tq) {
     tq->q_cart = NULL;

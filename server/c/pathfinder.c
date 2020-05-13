@@ -1,49 +1,272 @@
 /*
-Implements cart path finding
+
+This file contains the highest level of abstraction of paths. It also
+implements cart functionality, socket functionality, and serves as the
+main entry point for the taxirouter. Freely speaking, this could be
+seen as a mish-mash of the several concept of the taxirouter server
+into one overly saturated file. A more developed approach would likely
+have utilized another file whose sole purpose was to incorporate all
+of the different server aspects, but instead here we are.
+
+Let's break this up into three concepts developed in this file:
+
+    1. Pathfinding
+    2. Cart Handling
+    3. Server Control Flow
 
 
-METHODS:
+I. PATHFINDING:
+
+    The pathfinding implemented in this file is a simple recursive
+    search through the road state space (graph) given a cart and a
+    destination. The cart is important because its data will allow
+    us the ability to have a starting location for paths, an index
+    for path weights (more on this later), and a path queue pointer
+    stored on the stack which we can use to reference dynamically
+    allocated paths. To store paths being built, we use a path
+    container - a dynamically allocated singly linked NULL terminated
+    list. Each path container holds metadata on the path, that is
+    the path's length and weight (projected collisions). The actual
+    path building works as follows:
+
+        i. Check all four possible directions of travel and store
+        distances from correspoding vertex and destination
+        ii. Starting with the edge on the left, we look for one of
+        three cases:
+
+            a. This edge and the edge 90 degrees clockwise are
+            equidistant from the destination and both edges are
+            closer than the edge parallel to them
+            b. This edge and the edge 270 degrees clockwise are
+            equidistant from the destination and both edges are
+            closer than the edges parallel to them
+            c. This edge is solely the closest to the destination
+            and the two aforementioned edges are equidistant
+
+        iii. If none of these are satisfied, we repeat, rotating
+        our perspective by 90 degrees counter-clockwise
+        iv. Once one of these conditions has been satisfied, we
+        attempt to build down the two closest edges for cases (a)
+        and (b), or three closest edges for case (c)
+        v. However, we check to make sure that we did not just
+        build down each of these edges:
+
+            a. If we did, disregard this edge
+            b. If we did not, check if we have already creates a
+            new path in this process
+
+                (i) If we have not, add this edge to the path
+                (ii) If we have, copy the path creating a new
+                dynamically allocated path identical to the path
+                we began this process with. Add the edge to this
+                path
+
+        vi. Increment the number of edges in each path created
+        vii. Increment the number of possible collisions for each
+        path - this is done by checking the edge weights for the
+        indices not belonging to the current cart. If the number
+        of edges in the current path is equal or less than by 1
+        to the weight, add 1 as this indicates another cart will
+        likely be attempting to traverse down this edge in the same
+        number of turns. It should be noted that we do not check
+        the opposite edge as both the edge and opposite edge will
+        contain the same value to indicate when a given cart will
+        be on both of the edges.
+        viii. Recursively call the build path function, this time
+        with the destination vertex of the newest edge in the path
+        as the source vertex of the process (still the same
+        destination) unless the destination has already been reached
+
+        ix. Once the destination has been reached for all possible
+        paths, iterate through the path container list holding all
+        of these paths and find the path with the lowest length
+        and cost combination (although both values will actually
+        be weighted differently when calculating this)
+        x. Return the lowest cost path and store it as the cart's
+        current path, deleting the other paths in the process
 
 
+II. Cart Handling
+
+    To the server, the cart is a device that will be allowed to
+    update local data when the cart sends a coherent message in
+    response to the commands it is given. The pair communicate
+    as a kind of call and response system, The server observing
+    local data such as which direction the next edge is or is
+    it safe to traverse down an edge, then sending a corresponding
+    command; the cart receiving the command processing as it sees
+    fit, then letting the server know when it is done. The
+    server does not need to know how the cart is handling driving,
+    that is something the cart will handle locally. The commands
+    sent to the carts are as follows:
+
+        i. stop - indicates a path was successfully completed
+        ii. drive - indicates an edge is safe to travel down
+        iii. shutdown - indicates all passengers have been
+        successfully transported
+        iv. left - next vertex is to the left
+        v. up - next vertex is up
+        vi. right - next vertex is to the right
+        vii. down - next vertex is down
+        viii. avoid - another cart is traveling on the current edge,
+        move out of the way
+
+    The call and response flow control of the carts is as follows:
+
+        ###############################
+        #                             #
+        #  find next direction, send  #/____
+        #           to cart           #\    |
+        #                             #     |
+        ###############################     |
+                       |                    |
+                       |                    |
+                       |                    |
+                      \ /                   |
+        ###############################     |
+        #                             #     |
+        #      Wait for "turned"      #     |
+        #       acknowledgement       #     |
+        #                             #     |
+        ###############################     |
+                       |                    |
+                       |                    |
+                       |                    |
+                      \ /                   |
+        ###############################     |
+        #                             #     |
+        #  Check travel queue to see  #     |
+        #  if another cart owns edge  #     |
+        #                             #     |
+        ###############################     |
+          / \  |               |            |
+           |   | yes           | no         |
+           |   |               |            |
+           |  \ /             \ /           |
+        #############     #############     |
+        #           #     #           #     |
+        #   avoid   #     #   drive   #     |
+        #           #     #           #     |
+        #############     #############     |
+                               |            |
+                               |            |
+                               |            |
+                              \ /           |
+        ###############################     |
+        #                             #     |
+        #      Wait for "stopped"     #     |
+        #       acknowledgement       #     |
+        #                             #     |
+        ###############################     |
+                       |                    |
+                       |                    |
+                       |                    |
+                      \ /                   |
+        ###############################     |
+        #                             #  no |
+        #  Check to see if path has   #_____|
+        #        been completed       #    / \
+        #                             #     |
+        ###############################     |
+                       |                    |
+                       | yes                |
+                       |                    |
+                      \ /                   |
+                 ############               |
+                 #          #               |
+                 #   stop   #_______________|
+                 #          #
+                 ############
+
+    This process will repeat for each individual cart until
+    all passengers have been "trasnported"
+
+
+III. SERVER CONTROL FLOW
+
+    The main function of the server acts to initiate the road state
+    space with empty values, initialize travel queues for each pair
+    of edges, instantiate carts and their starting locations, prepare
+    mutexes (as this is a multithreaded program), and finally create
+    the threads which handle the carts. There will be CARTS cart
+    handling threads where CARTS is an int defined in const.h. Each
+    of these threads have the following control flow:
+
+        i. Open TCP socket for communication with carts (there could
+        be a single socket opened, but I am not sure how to go about
+        handling this, so I opened one per thread where the port
+        corresponds to the cart number)
+        ii. Wait for connection from cart
+        iii. Wait for CARTS connections to be made
+        iv. Grab vertex of next passenger, incrememnting the passenger
+        index (vertex_index) by one
+        v. Create path for cart with this vertex as the destination
+        vi. Proceed with cart handling as described in section (II)
+        vii. Check if there are still passengers left to "transport"
+
+            a. If there are, repeat from step (iv)
+            b. If not, send shutdown message, close socket, and end
+            thread
 
 */
 
+
+/* Basic libraries for handling system-level tasks */
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <string.h>
 
+/* Libraries enabling socket functionality */
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 
+/* User defined constants and types */
 #include "../defs/const.h"
 #include "../defs/types.h"
 
+/* Basic utility files for our state space */
 #include "../h/path.h"
 #include "../h/graph.h"
 #include "../h/travel_queue.h"
 
+/* Method declarations, making the compiler happy */
 #include "../h/pathfinder.h"
 
 
+
+/*
+ * Pathfinder global variables:
+ */
+
+/* Stack cart objects */
 static cart carts[CARTS];
 
-static int cost_weight = 3;
-static int length_weight = 1;
+/* Weights for calculating edge cost */
+int cost_weight = 3;
+int length_weight = 1;
 
-static int creations = CARTS;
+/* Data collection variable for counting paths made */
+int creations = CARTS;
 
-static int vertex_index = 0;
+/* Current passenger index */
+int vertex_index = 0;
 
-static int connections = 0;
+/* Established connections counter */
+int connections = 0;
 
+/* Locks to ensure passengers and path data are not accessed concurrently
+ * when this would be innapropriate */
 pthread_mutex_t path_lock, vertex_lock;
 
+/* Passenger vertex array */
 int passengers[PASSENGERS][2] = {
     {2, 3}, {1, 2}, {0, 0}, {3, 3}
 };
 
+
+/* Main entry point of server */
 
 int main() {
 
@@ -53,40 +276,45 @@ int main() {
 
     printf("Initializing graph\n");
 
+    /* Initialize state space */
     init_graph();
     init_travel_queue();
 
     printf("Finding paths\n");
 
+    /* Mutex initialization */
     if (pthread_mutex_init(&path_lock, NULL) != 0) {
         printf("\nmutex 1 init failed\n");
         return 1;
     }
-
     if (pthread_mutex_init(&vertex_lock, NULL) != 0) {
         printf("\nmutex 2 init failed\n");
         return 1;
     }
 
+
+    /* Cart initialization */
     for (i = 0; i < CARTS; i++) {
         printf("\ninitializing cart %d at [%d, %d]\n", i, i*2, i*2);
         carts[i].curr_loc = find_vertex((i*2),(i*2));
         carts[i].index = i;
     }
 
+    /* Creation of cart handling threads */
     for (i = 0; i < CARTS; i++) {
         pthread_create(&(t[i]), NULL, cart_handler, (void *) &(carts[i]));
     }
 
+    /* Waiting for completion of cart threads */
     for (i = 0; i < CARTS; i++) {
         pthread_join(t[i], NULL);
     }
-
 
     return 0;
 }
 
 
+/* Cart handling method as described above */
 
 void cart_handler(void *arg) {
 
@@ -94,12 +322,14 @@ void cart_handler(void *arg) {
     vertex *d, *v1, *v2;
     edge *curr_edge;
 
+    /* Socket variables */
     struct sockaddr_in server, client;
     int socket_desc = socket(AF_INET, SOCK_STREAM, 0),
         new_socket,
         conn,
         port = 1234 + c->index;
 
+    /* Cart commands */
     char mes[8][16] = {
     "stop",
     "drive",
@@ -112,6 +342,8 @@ void cart_handler(void *arg) {
 };
 
     char *response = (char *) malloc(20*sizeof(char));
+
+    /* ---------------- SOCKET INTITIALIZATION ------------ */
 
     if (socket_desc == -1) {
         puts("Could not open socket");
@@ -145,7 +377,11 @@ void cart_handler(void *arg) {
 
     puts("accept successful");
 
+    /* ---------------------------------------------------- */
+
     connections++;
+
+    /* Wait for all carts to connect */
 
     while (connections < CARTS) {
         sleep(1);
@@ -157,6 +393,9 @@ void cart_handler(void *arg) {
     c->curr_loc->busy = TRUE;
 
     while (vertex_index < PASSENGERS) {
+
+        /* ------------ FIND PATH ------------------ */
+
         d = find_vertex(passengers[vertex_index][0], passengers[vertex_index][1]);
 
         printf("passenger #: %d\n", vertex_index);
@@ -176,11 +415,15 @@ void cart_handler(void *arg) {
 
         pthread_mutex_unlock(&path_lock);
 
+        /* ----------------------------------------- */
+
+        /* ----------- TRAVERSE PATH --------------- */
+
         while (empty_eq(c->curr_path->edge_queue_tail) == FALSE) {
 
             curr_edge = queue_head_edge(c->curr_path);
 
-
+            /* TURN */
             puts("finding direction");
             switch (next_direction(c->curr_loc, curr_edge->dest)) {
                 case LEFT:
@@ -197,6 +440,7 @@ void cart_handler(void *arg) {
                     break;
             }
 
+            /* WAIT FOR "TURNED" */
             while (strcmp(response, "turned") != 0) {
                 recv(new_socket, response, strlen("turned"), 0);
                 response[6] = 0;
@@ -206,18 +450,22 @@ void cart_handler(void *arg) {
 
             insert_tq(find_tq(curr_edge), c);
 
+            /* CHECK IF CART OWNS EDGE */
+            if (tq_head(find_tq(curr_edge)) != c) {
 
-            send(new_socket, mes[7], strlen(mes[7]), 0);
-
+                /* AVOID */
+                send(new_socket, mes[7], strlen(mes[7]), 0);
+            }
 
             while (tq_head(find_tq(curr_edge)) != c) {
                 sleep(1);
             }
 
-
+            /* DRIVE */
             traverse_path(c);
             send(new_socket, mes[1], strlen(mes[1]), 0);
 
+            /* WAIT FOR "STOPPED" */
             puts("handling movement");
             while (strcmp(response, "stopped") != 0) {
                 recv(new_socket, response, strlen("stopped"), 0);
@@ -228,12 +476,16 @@ void cart_handler(void *arg) {
             remove_tq(find_tq(curr_edge));
         }
 
+        /* ----------------------------------------- */
+
         send(new_socket, mes[0], strlen(mes[0]), 0);
 
         c->curr_path->start = c->curr_loc;
 
         pthread_mutex_lock(&vertex_lock);
     }
+
+    /* ------------- HANDLE SHUTDOWN ------------------- */
 
     pthread_mutex_unlock(&vertex_lock);
 
@@ -244,9 +496,13 @@ void cart_handler(void *arg) {
 
     printf("closing socket\n");
     close(socket_desc);
+
+    /* ------------------------------------------------- */
 }
 
 
+
+/* Determine and return orientation of directed edge */
 
 int next_direction(vertex *s, vertex *d) {
     int x_diff, y_diff;
@@ -273,6 +529,8 @@ int next_direction(vertex *s, vertex *d) {
 
 
 
+/* Helper function to determine if cart is on an edge, not utilized */
+
 bool cart_on_edge(cart *c) {
     int i = 0;
     edge *e = queue_head_edge(c->curr_path);
@@ -287,6 +545,9 @@ bool cart_on_edge(cart *c) {
 
 
 
+/* Reset weights on a carts path to prepare for switching paths,
+ * not utilized*/
+
 void zero_path_weight(path *p, int c_index) {
     edge_queue *curr = p->edge_queue_tail->next_eq;
 
@@ -299,6 +560,10 @@ void zero_path_weight(path *p, int c_index) {
     set_weight(opposite_edge(curr->curr_edge), 0, c_index);
 }
 
+
+/* Set the weight for a cart's path by beginning at 1 for the first
+ * edge, incrementing by 1 for each subsequent edge denoting how many
+ * turns the cart will be at this edge by */
 
 void set_path_weight(path *p, int c_index) {
     int run = 1;
@@ -315,10 +580,22 @@ void set_path_weight(path *p, int c_index) {
 }
 
 
+/* Return the destination vertex of cart's next edge */
+
 vertex* get_destination(cart *c) {
     return queue_head_edge(c->curr_path)->dest;
 }
 
+
+
+/* Handle updating model data when cart traverses an edge:
+ *
+ *     i. Release starting vertex boolean (makeshift mutex),
+ *     obtain destination vertex boolean (fake mutex)
+ *     ii. Decrement path weights for cart
+ *     iii. Pop edge from path
+ *     iv. Adjust current location of cart
+ */
 
 void traverse_path(cart *c) {
     edge *e;
@@ -340,7 +617,7 @@ void traverse_path(cart *c) {
 }
 
 
-
+/* Obtain a list of path containers, each holding a viable path */
 
 path_container* build_path_container(vertex *s, vertex *d) {
     path_container *ptc = empty_path_container();
@@ -354,6 +631,9 @@ path_container* build_path_container(vertex *s, vertex *d) {
     return ptc;
 }
 
+
+/* Check to see if current edge is the opposite of the edge just added,
+ * as we do not want to make paths going back and forth*/
 
 bool edge_just_traveled(path *p, edge *e) {
     if (p == NULL) {
@@ -370,6 +650,8 @@ bool edge_just_traveled(path *p, edge *e) {
 
 
 
+/* Recursive path building method as described above */
+
 void build_paths(path_container *ptc_head, path *p, vertex *d, int run) {
     edge *e = NULL, *poss_edges[4];
     vertex *curr_v = next_vertex(p), *directions[4];
@@ -380,21 +662,26 @@ void build_paths(path_container *ptc_head, path *p, vertex *d, int run) {
 
     for (i = 0; i < 4; i++) {
         poss_edges[i] = NULL;
-        distances[i] = 100;
+        distances[i] = VERT_ROADS*HORIZ_ROADS;
     }
 
     for (j = 0; j < 3; j++) {
         poss_paths[j] = NULL;
     }
 
+    /* Check if we can reach the destination from the current vertex */
     e = find_edge(curr_v, d);
 
     if (e == NULL) {
+
+        /* Find vertices in all four directions */
         directions[UP] = find_vertex(curr_v->coordx, curr_v->coordy+1);
         directions[RIGHT] = find_vertex(curr_v->coordx+1, curr_v->coordy);
         directions[DOWN] = find_vertex(curr_v->coordx, curr_v->coordy-1);
         directions[LEFT] = find_vertex(curr_v->coordx-1, curr_v->coordy);
 
+        /* If each direction has a valid vertex, update information for
+         * that direction */
         for (i = 0; i < 4; i++) {
             if (directions[i] != NULL) {
                 distances[i] = distance(directions[i], d);
@@ -403,7 +690,6 @@ void build_paths(path_container *ptc_head, path *p, vertex *d, int run) {
         }
 
         /* Checking distance cases */
-
         for (i = 0; i < 4; i++) {
 
             if (path_built == TRUE) {
@@ -411,6 +697,16 @@ void build_paths(path_container *ptc_head, path *p, vertex *d, int run) {
             }
 
             else {
+
+
+
+                /* CASE:      / \
+                 *             |
+                 *             |
+                 *             |
+                 * /___________|
+                 * \
+                 *  */
 
                 if (distances[(i%4)] < distances[(i+2)%4] && distances[(i+1)%4] < distances[(i+3)%4]) {
 
@@ -443,6 +739,13 @@ void build_paths(path_container *ptc_head, path *p, vertex *d, int run) {
 
 
 
+                /* CASE:    / \
+                 *           |
+                 *           |
+                 *           |
+                 *           |___________\
+                 *                       /
+                 *  */
 
                 else if (distances[(i%4)] < distances[(i+2)%4] && distances[(i+3)%4] < distances[(i+1)%4]) {
 
@@ -476,6 +779,13 @@ void build_paths(path_container *ptc_head, path *p, vertex *d, int run) {
 
 
 
+                /* CASE:      / \
+                 *             |
+                 *             |
+                 *             |
+                 * /___________|____________\
+                 * \                        /
+                 *  */
 
                 else if (distances[(i%4)] < distances[(i+2)%4] && distances[(i+1)%4] == distances[(i+3)%4]) {
 
@@ -519,6 +829,10 @@ void build_paths(path_container *ptc_head, path *p, vertex *d, int run) {
                         } 
                     }    
                 }
+
+
+                /* Build paths for satisfied case */
+               
                 if (poss_paths[0] != NULL) {
                     enqueue_edge(&(poss_paths[0]->edge_queue_tail), poss_edges[i]);
                     poss_paths[0]->cost += possible_collision(poss_paths[0]->edge_queue_tail->curr_edge, run);
@@ -538,6 +852,9 @@ void build_paths(path_container *ptc_head, path *p, vertex *d, int run) {
         }
 
     } else {
+
+        /* Update path data for finalized path */
+
         p->length = run;
         p->cost += possible_collision(e, run);
         enqueue_edge(&(p->edge_queue_tail), e);
@@ -545,12 +862,16 @@ void build_paths(path_container *ptc_head, path *p, vertex *d, int run) {
 }
 
 
+/* Calculate number of projected collisions by checking weight indices of current edge.
+ * Current cart index is unnecesary as a cart without a path will have 0's in all edge
+ * weights at its index */
+
 int possible_collision(edge *e, int w) {
     int c, count = 0;
     for (c = 0; c < CARTS; c++) {
         /* Both edges will have the same weight, so we do not need to check
         the opposite edge */
-        if (weight(e, c) == w || weight(e, c) == w + 1 || weight(e, c) == w - 1) {
+        if (weight(e, c) == w || weight(e, c) == w + 1) {
             count++;
         }
     }
@@ -558,13 +879,13 @@ int possible_collision(edge *e, int w) {
 }
 
 
+
+/* Set the given cart's path to the ideal path calculated by our path finding algorithm */
+
 void find_optimal_path(cart *c, vertex *d) {
     c->curr_path = lowest_cost_path(build_path_container(c->curr_loc, d));
     set_path_weight(c->curr_path, c->index);
 }
-
-
-
 
 
 
@@ -601,6 +922,12 @@ void insert_path(path_container *head, path *p) {
     }
     next->next_container = new_path_container(p);
 }
+
+
+
+/* find the lowest cost path in the list of path containers,
+ * remove it from the list, delete the path containers, and
+ * return the lowest cost path*/
 
 path* lowest_cost_path(path_container *ptc_head) {
     int lowest_cost = 1000, i = 0;
