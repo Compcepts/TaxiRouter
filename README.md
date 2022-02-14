@@ -20,7 +20,7 @@ directory
 4. Install Raspbian or similar Linux distro onto RPi
 5. Install Python3 and RPiO library
 6. Edit cartdriver.py:
-    1. To make a functioning cart, you only need to define the 'drive', 'turn_left', 'turn_right', 'turn_around', 'stop', and 'shutdown' functions.
+    1. To make a functioning cart, you only need to define the `drive`, `turn_left`, `turn_right`, `turn_around`, `stop`, and `shutdown` functions.
     2. You can choose how you want to implement these functions with your choice of sensors and motors - just make sure you can guarantee proper movement along your map.
 7. To run server, run the pathfinder object file
 8. To run the cart, run the command 'python3 pythsock <cart_index>'
