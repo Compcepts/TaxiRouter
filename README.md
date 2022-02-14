@@ -1,6 +1,6 @@
-TAXIROUTER - a simple, extensible autonomous vehicle routing system
+# TAXIROUTER - a simple, extensible autonomous vehicle routing system
 
-ABOUT:
+## ABOUT:
     This project is designed as a proof-of-concept for simple WiFi-based vehicle 
     routing. It uses a server/client model as a means to  coordinate  movement 
     between a server and any number of vehicles in the network. The server code
@@ -8,7 +8,7 @@ ABOUT:
     some slight modification. The client code is made for Raspberry Pi's  
     running Linux as well. 
 
-HOW TO USE:
+## HOW TO USE:
     If you are interested in running this project on your own, there are a few
     steps you can take to do so:
     
@@ -28,7 +28,7 @@ HOW TO USE:
         7. To run server, run the pathfinder object file
         8. To run the cart, run the command 'python3 pythsock <cart_index>'
     
-    NOTE:
+   ### NOTE:
         When making your map, it needs to be made as a grid, and your cart must
         be able to detect intersections while driving, then stop and return from
         the drive function. Likwise it should be able to detect when it has
