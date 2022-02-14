@@ -1,8 +1,8 @@
 # TAXIROUTER - a simple, extensible autonomous vehicle routing system
 
 ## ABOUT:
-This project is designed as a proof-of-concept for simple WiFi-based vehicle 
-routing. It uses a server/client model as a means to  coordinate  movement 
+This project is designed as a proof-of-concept for a simple WiFi-based vehicle 
+router. It uses a server/client model as a means to  coordinate  movement 
 between a server and any number of vehicles in the network. The server code
 is capable of being run on any Linux machine, possibly other OS's too with
 some slight modification. The client code is made for Raspberry Pi's  
@@ -28,6 +28,6 @@ directory
 ### NOTE:
 When making your map, it needs to be made as a grid, and your cart must
 be able to detect intersections while driving, then stop and return from
-the drive function. Likwise it should be able to detect when it has
-successfully turned and return from turn functions as well.
+the drive function. Likwise, it should be able to detect when it has
+successfully turned - then returning from the turn function.
 
